@@ -16,6 +16,9 @@ class ProbabilisticDataAssociationFilter:
         # Todo: create measurements as list or set and create validation range
         pass
 
+    def associate(self):
+        pass
+
     def evaluate_association_probability(self):
         pass
 
