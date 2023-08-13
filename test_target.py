@@ -4,12 +4,12 @@ from DataGeneration.Target import Target
 class TestTarget(unittest.TestCase):
     """Test Target.py"""
     def test_target(self):
-        my_target = Target(inital_x=0,
-                   inital_y=0,
-                   steps=100,
-                   simulation_duration=1000,
-                   Velocity_x=1,
-                   Velocity_y=1)
+        my_target = Target(initial_x=0,
+                           initial_y=0,
+                           steps=100,
+                           simulation_duration=1000,
+                           velocity_x=1,
+                           velocity_y=1)
         my_target.initiate()
         x_path = my_target.entire_x
         y_path = my_target.entire_y

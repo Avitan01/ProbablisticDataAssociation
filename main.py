@@ -1,16 +1,21 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from DataGeneration.Target import Target
+from Tools.Plotter import Plotter
+import matplotlib.pyplot as plt
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-print('this is ori again')
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+target = Target(initial_x=0.0, initial_y=0.0, steps=100, simulation_duration=10,
+                velocity_x=2, velocity_y=3)
+target.initiate()
+x_vec, y_vec = target.entire_x, target.entire_y
+print(x_vec)
+print(y_vec)
+
+plotter = Plotter()
+plotter.set_axis(plot_title='Target Tracking')
+
+plotter.plot_true_values((x_vec, y_vec))
+plotter.add_grid()
+plotter.add_labels()
+plt.show()
+
+
