@@ -22,7 +22,7 @@ class Target:
         self._steps = steps
         self._time = simulation_duration
         self._Vx = Velocity_x
-        self._Vx = Velocity_y
+        self._Vy = Velocity_y
         self._trajectory_x = []
         self._trajectory_y = []
         self._time_vector = []
@@ -37,12 +37,11 @@ class Target:
             self._trajectory_x.append(self._x)
             self._trajectory_y.append(self._y)
             self._time_vector.append(_current_t)
-            self._x = self._x + self.Vx*self._dt
-            self._y = self._y + self.Vy*self._dt
-            _current_t = step*self._dt
+            self._x = self._x + self._Vx*self._dt
+            self._y = self._y + self._Vy*self._dt
+            _current_t = _current_t + self._dt
     
-    def pull_state(self,specific_time) -> list:
-        index = specific_time//self._dt
+    def pull_state(self,index) -> list:
         return [self._trajectory_x[index],
                 self._trajectory_y[index],
                 self._time_vector[index]]
