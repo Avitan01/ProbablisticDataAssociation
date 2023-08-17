@@ -25,7 +25,7 @@ class Clutter:
         mean_x = 0
         mean_y = 0
 
-        match self.dist:
+        match self.dist.lower():
             case "normal":
                 self._x_dist = dist.norm(loc=mean_x, scale=self.std)
                 self._y_dist = dist.norm(loc=mean_y, scale=self.std)
