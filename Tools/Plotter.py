@@ -72,7 +72,7 @@ class Plotter:
         measurements_kwargs.update(kwargs)
         self.plot_data(measurements, scatter=True, **measurements_kwargs)
 
-    def plot_clutter(self, clutter: tuple, **kwargs) -> None:
+    def plot_clutter(self, clutter: tuple|set, **kwargs) -> None:
         """Plot the clutter as a set of markers in a 2D plot
             Args:
                 clutter(tuple): Containing the x,y vector."""
@@ -80,7 +80,7 @@ class Plotter:
                           'color': 'y',
                           'label': 'Clutter'}
         clutter_kwargs.update(kwargs)
-        self.plot_data(clutter, scatter=True, **clutter_kwargs)
+        self.plot_data(*clutter, scatter=True, **clutter_kwargs)
 
     def plot_covariance(self, covariance: tuple, **kwargs) -> None:
         """Plot the covariance as a dashed line

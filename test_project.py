@@ -3,7 +3,15 @@ from Tools.Plotter import Plotter
 
 
 import unittest
-from DataGeneration.Target import Targe#t
+from DataGeneration.Target import Target
+from DataGeneration.Clutter import Clutter
+
+clutter = Clutter(origin=(1,1), dist_type="normal", norm_std=2)
+for _ in range(10):
+    measurements = clutter.generate_clutter()
+    measurements.add(ture_measuremet)
+    
+check = next(test)
 
 #class TestTarget(unittest.TestCase):
 #    """Test Target.py"""
@@ -30,4 +38,4 @@ from DataGeneration.Target import Targe#t
 #        y_test = 0 + 1*time
 #        true_state = [x_test,y_test,time]
 #        self.assertEqual(my_state,true_state)
-        
+
