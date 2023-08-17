@@ -84,7 +84,7 @@ class Plotter:
                           'color': 'y',
                           'label': 'Clutter'}
         clutter_kwargs.update(kwargs)
-        self.plot_data(*clutter, scatter=True, **clutter_kwargs)
+        self.plot_data(clutter, scatter=True, **clutter_kwargs)
 
     def plot_covariance(self, covariance: tuple, **kwargs) -> None:
         """Plot the covariance as a dashed line
@@ -95,6 +95,10 @@ class Plotter:
                              'label': '$\sigma$'}
         covariance_kwargs.update(kwargs)
         self.plot_data(covariance, **covariance_kwargs)
+
+    @staticmethod
+    def show_plot():
+        plt.show()
 
 
 if __name__ == "__main__":

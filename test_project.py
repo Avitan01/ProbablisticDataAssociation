@@ -1,17 +1,18 @@
 import unittest
 from Tools.Plotter import Plotter
+from scipy import stats
+
 
 
 import unittest
 from DataGeneration.Target import Target
 from DataGeneration.Clutter import Clutter
 
-clutter = Clutter(origin=(1,1), dist_type="normal", norm_std=2)
-for _ in range(10):
-    measurements = clutter.generate_clutter()
-    measurements.add(ture_measuremet)
-    
-check = next(test)
+clutter = Clutter(dist_type="uniform", std=1)
+plotter = Plotter()
+plotter.plot_clutter(clutter=clutter.generate_clutter((7,5)))
+plotter.show_plot()
+
 
 #class TestTarget(unittest.TestCase):
 #    """Test Target.py"""

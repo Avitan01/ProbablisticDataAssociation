@@ -1,51 +1,51 @@
 import scipy.stats as dist
+import numpy as np
+
+#class clutter - choose the dist (with switchcase) and have it with mean 0
+#generation - create the data then move it to desired mean then returns it
+
 
 class Clutter:
-    """create a clutter based on chosen distribiution. number of false alarmas is always 100
-    The clutter class creates a seperate distribiution for x and y"""
-    
-    def __init__(self, origin: tuple,
+    """creates a clutter of measurments based on chosen distribiution. choose the distribiution
+    then to center it around a desired point using the generate_clutter function"""
+    CLUTTER_SIZE = 100
+    def __init__(self, 
                  dist_type: str, 
-                 norm_std = None, 
-                 uni_low_bound = None) -> None:
+                 std: float) -> None:
         """
         Args:
         dist_type - distribiution of the clutter. the options are:
             "normal" - for normal distribiution 
+            "uniform" - for uniform distribiution
+        std - standart diviation of the distribiution
          """
-        self._num_of_false_targets = 100 # constant for now
+        self.dist = dist_type
+        self.std = std
+        mean_x = 0    
+        mean_y = 0
 
-        match dist_type:
+        match self.dist:
             case "normal":
-                self._mean_x = origin[0]
-                self._mean_y = origin[1]
-                self._std = norm_std
-                self._x_dist = dist.norm(loc = self._mean_x, scale = self._std)
-                self._y_dist = dist.norm(loc = self._mean_y, scale = self._std)
-                self.generate_clutter()
+                self._x_dist = dist.norm(loc = mean_x, scale = self.std)
+                self._y_dist = dist.norm(loc = mean_y, scale = self.std)
 
             case "uniform":
-                self.low_bound = uni_low_bound
-                self._mean_x = origin[0]
-                self._mean_y = origin[1]
-                self.high_bound_x = 2 * self._mean_x - self.low_bound
-                self.high_bound_y = 2 * self._mean_y - self.low_bound
-                self._x_dist = dist.uniform(loc = self.low_bound, scale = self.high_bound_x - self.low_bound)
-                self._y_dist = dist.uniform(loc = self.low_bound, scale = self.high_bound_y - self.low_bound)
-                self.generate_clutter()
+                # mean = (a+b)/2 , var = (b-a)^2 / 12
+                # if we want mean = 0 then a = -b, meaning: var = 4b^2 / 12 = b^2 / 3
+                # therefore  b = -a = sqrt(3*var)
+                high_bound = np.sqrt(3*self.std)
+                low_bound = -high_bound
+                self._x_dist = dist.uniform(loc = low_bound, scale = high_bound - low_bound)
+                self._y_dist = dist.uniform(loc = low_bound, scale = high_bound - low_bound)
 
-            case "Poiss":
-                self._mean_x = origin[0] #lambda parameter
-                self._mean_y = origin[1]
-                self._x_dist = dist.poisson(mu = self._mean_x)
-                self._y_dist = dist.poisson(mu = self._mean_y)
-                self.generate_clutter()
-        
-
-    def generate_clutter(self) -> set:
-        "Returns a set of points distributed with the chosen distribiution"
-        self._x_clutter = self._x_dist.rvs(size=self._num_of_false_targets)
-        self._y_clutter = self._y_dist.rvs(size=self._num_of_false_targets)
-        clutter = {(self._x_clutter[idx],self._y_clutter[idx]) 
-                        for idx in range(self._num_of_false_targets)}
+    def generate_clutter(self, mean: tuple) -> set:
+        """Returns a clutter with chosen distribiution for object Clutter and a given mean"""
+        """
+        Args:
+        mean - the (x,y) coordinate that are then mean of the distribiution 
+        """
+        x_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE) + mean[0]
+        y_clutter = self._y_dist.rvs(size=self.CLUTTER_SIZE) + mean[1]
+        clutter = {(x_clutter[idx],y_clutter[idx]) 
+                        for idx in range(self.CLUTTER_SIZE)}
         return clutter
