@@ -5,32 +5,44 @@ class ProbabilisticDataAssociationFilter:
     """Implement the PDA filter under the assumption mentioned"""
     iX = 0
     iY = 1
-    NUMVARS = iY + 1
+    NUMMEAS = iY + 1
+    iVX = 2
+    iVY = 3
+    NUMVARS = iVY + 1
 
     def __init__(self, initial_x: float, initial_y: float,
-                 Pd: float) -> None:
+                 initial_v_x: float, initial_v_y: float,
+                 dt: float, Pd: float) -> None:
         """Initialize filter class
             Args:
                 initial_x(float): Initial x position of the tracked target in 2D space.
                 initial_y(float): Initial y position of the tracked target in 2D space.
+                initial_v_x(float): iii
+                initial_v_y(float): lll
+                dt(float): Time interval
                 Pd(float): The probability of detecting the true target."""
         self._x = np.zeros(self.NUMVARS)  # State vector
         self._x[self.iX] = initial_x
         self._x[self.iY] = initial_y
+        self._x[self.iVX] = initial_v_x
+        self._x[self.iVY] = initial_v_y
         self._P = 10 * np.eye(self.NUMVARS)
         self._z = []
-        self._S = []
-        self._V = []  # Innovation
+        self._S = []  # Innovation
+        self._V = []
         self._W = []  # Gain
         self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._Pd = Pd  # Probability for detection
         self._Pg = 0  # Factor for probability
-        self._F = 1*np.eye(self.NUMVARS)  # Transition matrix
-        self._F[self.iX, self.iY] = 0.01
-        self._F[self.iY, self.iX] = 0.01
-        self._H = np.eye(self.NUMVARS)  # Observation matrix
-        self._Q = np.zeros(self.NUMVARS)  # Process noise covariance
-        self._gamma = 16  # Validation parameter
+        self._F = np.eye(self.NUMVARS)  # Transition matrix
+        self._F[self.iX, self.iVX] = dt
+        self._F[self.iY, self.iVY] = dt
+        self._H = np.zeros((self.NUMMEAS, self.NUMVARS))  # Observation matrix
+        self._H[self.iX, self.iX] = 1
+        self._H[self.iY, self.iY] = 1
+        self._Q = 0.01 ** 2 * np.eye(self.NUMVARS)  # Process noise covariance
+        self._gamma = 0.05  # Validation parameter
+        self._R = 7 ** 2 * np.eye(self.NUMMEAS)
         self._log_state = []
 
     def predict(self):
@@ -39,18 +51,18 @@ class ProbabilisticDataAssociationFilter:
         self._z = self._H.dot(self._x)
         self._P = self._F.dot(self._P).dot(self._F.T) + self._Q
 
-    def validate(self, measurements: set, R: np.array):
+    def validate(self, measurements: set) -> set:
         """Validate the incoming measurements and define the innovation
             Args:
                 measurements(set): A set of measurements containing tuples with the x, y measurements of each point.
-                R(np.array): Noise covariance given to us."""
-        self._S = self._H.dot(self._P).dot(self._H.T) + R
+                """
+        self._S = self._H.dot(self._P).dot(self._H.T) + self._R
         validated_measurements = set()
         for measurement in measurements:
             validation_region = (measurement - self._z).T.dot(np.linalg.inv(self._S)).dot(measurement - self._z)
             if validation_region <= self._gamma:
                 validated_measurements.add(measurement)
-        """Create validation region based on the measurement"""
+        return validated_measurements
         # Todo: create measurements as list or set and create validation range
         pass
 
