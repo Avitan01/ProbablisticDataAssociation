@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+from scipy import special
 
 
 class ProbabilisticDataAssociationFilter:
@@ -27,7 +28,7 @@ class ProbabilisticDataAssociationFilter:
         self._x[self.iY] = initial_y
         self._x[self.iVX] = initial_v_x
         self._x[self.iVY] = initial_v_y
-        self._P = 10000 * np.eye(self.NUMVARS)
+        self._P = 10 * np.eye(self.NUMVARS)
         self._z = []
         self._S = []  # Innovation
         self._V = []
@@ -42,9 +43,9 @@ class ProbabilisticDataAssociationFilter:
         self._H[self.iX, self.iX] = 1
         self._H[self.iY, self.iY] = 1
         self._Q = 0.01 ** 2 * np.eye(self.NUMVARS)  # Process noise covariance
-        self._gamma = 16  # Validation parameter
+        self._gamma = 0.05  # Validation parameter
         self._R = 7 ** 2 * np.eye(self.NUMMEAS)
-        self._lambda = 2  # Poisson dist of the number of targets in the clutter
+        self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
 
     def predict(self):
@@ -71,6 +72,9 @@ class ProbabilisticDataAssociationFilter:
         likelihood = []
         beta = []
         nu = []
+        # Todo: Check if c=pi
+        self._V = np.pi * self._gamma ** (self.NUMVARS / 2) * np.sqrt(np.linalg.det(self._S))
+        self._lambda = len(validated_measurement) / self._V
         for valid_meas in validated_measurement:
             nu.append(valid_meas - self._z)
             pdf = stats.multivariate_normal.pdf(valid_meas, self._z, self._S)

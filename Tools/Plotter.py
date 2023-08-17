@@ -72,7 +72,7 @@ class Plotter:
             Args:
                 measurements: Containing the x,y vectors to plot"""
         measurements_kwargs = {'marker': 'o',
-                               'color': 'r',
+                               'color': 'c',
                                'label': 'Measurements',
                                's': 5}
         measurements_kwargs.update(kwargs)
@@ -104,7 +104,15 @@ class Plotter:
 
 
 if __name__ == "__main__":
-    # Example
+    from matplotlib.patches import Ellipse
+    # Define the center and radii of the ellipse
+    center = (0, 0)
+    radii = (2, 1)
+    # Create the ellipse patch
+    ellipse = Ellipse(xy=center, width=radii[0], height=radii[1], angle=0)
+    ellipse.set_edgecolor('black')
+    ellipse.set_fill(False)
+
     plotter = Plotter()
     plotter.set_axis(plot_title='Target Tracking')
     # Data Creation
@@ -121,4 +129,5 @@ if __name__ == "__main__":
     plotter.plot_covariance((x, y_cov_minus), **{'label': '$-\sigma$'})
     plotter.add_grid()
     plotter.add_labels()
+    plotter.ax.add_patch(ellipse)
     plt.show()
