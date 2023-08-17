@@ -24,7 +24,7 @@ for time in target.time_vector:
     saved_clutter.append(cluster)
     cluster.add((x_true, y_true))  # Add noise to true measurements
     pdaf.predict()
-    validated_measurements.append(pdaf.validate(cluster))
+    validated_measurements.append(pdaf.update(cluster))
 
 x_vec, y_vec = target.x_trajectory, target.y_trajectory
 plotter.plot_true_values((x_vec, y_vec))

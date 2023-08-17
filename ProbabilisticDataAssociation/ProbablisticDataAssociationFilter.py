@@ -54,17 +54,16 @@ class ProbabilisticDataAssociationFilter:
     def validate(self, measurements: set) -> set:
         """Validate the incoming measurements and define the innovation
             Args:
-                measurements(set): A set of measurements containing tuples with the x, y measurements of each point.
-                """
+                measurements(set): A set of measurements containing tuples with the x, y measurements of each point."""
         self._S = self._H.dot(self._P).dot(self._H.T) + self._R
         validated_measurements = set()
         for measurement in measurements:
             validation_region = (measurement - self._z).T.dot(np.linalg.inv(self._S)).dot(measurement - self._z)
             if validation_region <= self._gamma:
                 validated_measurements.add(measurement)
+        self._measurements.append(validated_measurements)
         return validated_measurements
         # Todo: create measurements as list or set and create validation range
-        pass
 
     def associate(self):
         pass
@@ -72,9 +71,8 @@ class ProbabilisticDataAssociationFilter:
     def evaluate_association_probability(self):
         pass
 
-    def update(self):
-        """Update the state and covariance based on the measurements and innovation"""
-        pass
+    def update(self, measurements: set):
+        return self.validate(measurements)
 
     def run_filter(self, time):
         for _ in time:
