@@ -33,7 +33,11 @@ class Plotter:
         plot_kwargs = dict(marker='o', color='b')
         plot_kwargs.update(kwargs)
         if scatter:
-            self.ax.scatter(*data, **kwargs)
+            if isinstance(data, set):
+                x_points, y_points = zip(*data)
+                self.ax.scatter(x_points, y_points, **kwargs)
+            elif isinstance(data, tuple):
+                self.ax.scatter(*data, **kwargs)
         else:
             self.ax.plot(*data, **kwargs)
 
