@@ -72,8 +72,8 @@ class ProbabilisticDataAssociationFilter:
         likelihood = []
         beta = []
         nu = []
-        # Todo: Check if c=pi
-        self._V = np.pi * self._gamma ** (self.NUMVARS / 2) * np.sqrt(np.linalg.det(self._S))
+        c_hypersphere = np.pi**(self.NUMMEAS/2) / special.gamma((self.NUMMEAS/2)+1)
+        self._V = c_hypersphere * self._gamma ** (self.NUMVARS / 2) * np.sqrt(np.linalg.det(self._S))
         self._lambda = len(validated_measurement) / self._V
         for valid_meas in validated_measurement:
             nu.append(valid_meas - self._z)
