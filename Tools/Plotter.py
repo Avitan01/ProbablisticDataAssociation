@@ -33,7 +33,11 @@ class Plotter:
         plot_kwargs = dict(marker='o', color='b')
         plot_kwargs.update(kwargs)
         if scatter:
-            self.ax.scatter(*data, **kwargs)
+            if isinstance(data, set):
+                x_points, y_points = zip(*data)
+                self.ax.scatter(x_points, y_points, **kwargs)
+            elif isinstance(data, tuple):
+                self.ax.scatter(*data, **kwargs)
         else:
             self.ax.plot(*data, **kwargs)
 
@@ -72,7 +76,7 @@ class Plotter:
         measurements_kwargs.update(kwargs)
         self.plot_data(measurements, scatter=True, **measurements_kwargs)
 
-    def plot_clutter(self, clutter: tuple, **kwargs) -> None:
+    def plot_clutter(self, clutter: tuple|set, **kwargs) -> None:
         """Plot the clutter as a set of markers in a 2D plot
             Args:
                 clutter(tuple): Containing the x,y vector."""
