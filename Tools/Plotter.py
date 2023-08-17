@@ -67,14 +67,14 @@ class Plotter:
         true_values_kwargs.update(kwargs)
         self.plot_data(true_values, **true_values_kwargs)
 
-    def plot_measurements(self, measurements: tuple | set, **kwargs) -> None:
+    def plot_measurements(self, measurements: tuple | set | list, **kwargs) -> None:
         """Plot a all measurements in a 2D plot
             Args:
-                measurements(tuple): Containing the x,y vectors to plot"""
+                measurements: Containing the x,y vectors to plot"""
         measurements_kwargs = {'marker': 'o',
                                'color': 'r',
                                'label': 'Measurements',
-                               's': 3}
+                               's': 5}
         measurements_kwargs.update(kwargs)
         self.plot_data(measurements, scatter=True, **measurements_kwargs)
 
