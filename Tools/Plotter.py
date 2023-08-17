@@ -33,7 +33,7 @@ class Plotter:
         plot_kwargs = dict(marker='o', color='b')
         plot_kwargs.update(kwargs)
         if scatter:
-            if isinstance(data, set):
+            if isinstance(data, (set, list)):
                 x_points, y_points = zip(*data)
                 self.ax.scatter(x_points, y_points, **kwargs)
             elif isinstance(data, tuple):
@@ -62,21 +62,23 @@ class Plotter:
                 true_values(tuple): Containing the x,y vectors to plot"""
         true_values_kwargs = {'marker': 'o',
                               'color': 'b',
-                              'label': 'Measurements'}
+                              'label': 'Measurements',
+                              'markersize': 1}
         true_values_kwargs.update(kwargs)
         self.plot_data(true_values, **true_values_kwargs)
 
-    def plot_measurements(self, measurements: tuple, **kwargs) -> None:
+    def plot_measurements(self, measurements: tuple | set, **kwargs) -> None:
         """Plot a all measurements in a 2D plot
             Args:
                 measurements(tuple): Containing the x,y vectors to plot"""
         measurements_kwargs = {'marker': 'o',
                                'color': 'r',
-                               'label': 'Measurements'}
+                               'label': 'Measurements',
+                               's': 3}
         measurements_kwargs.update(kwargs)
         self.plot_data(measurements, scatter=True, **measurements_kwargs)
 
-    def plot_clutter(self, clutter: tuple|set, **kwargs) -> None:
+    def plot_clutter(self, clutter: tuple | set, **kwargs) -> None:
         """Plot the clutter as a set of markers in a 2D plot
             Args:
                 clutter(tuple): Containing the x,y vector."""
@@ -95,6 +97,10 @@ class Plotter:
                              'label': '$\sigma$'}
         covariance_kwargs.update(kwargs)
         self.plot_data(covariance, **covariance_kwargs)
+
+    @staticmethod
+    def show_plot():
+        plt.show()
 
 
 if __name__ == "__main__":
