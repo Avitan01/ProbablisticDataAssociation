@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import stats
 
 
 class ProbabilisticDataAssociationFilter:
@@ -26,14 +27,14 @@ class ProbabilisticDataAssociationFilter:
         self._x[self.iY] = initial_y
         self._x[self.iVX] = initial_v_x
         self._x[self.iVY] = initial_v_y
-        self._P = 10 * np.eye(self.NUMVARS)
+        self._P = 10000 * np.eye(self.NUMVARS)
         self._z = []
         self._S = []  # Innovation
         self._V = []
         self._W = []  # Gain
         self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._Pd = Pd  # Probability for detection
-        self._Pg = 0  # Factor for probability
+        self._Pg = 0.97  # Factor for probability
         self._F = np.eye(self.NUMVARS)  # Transition matrix
         self._F[self.iX, self.iVX] = dt
         self._F[self.iY, self.iVY] = dt
@@ -41,13 +42,14 @@ class ProbabilisticDataAssociationFilter:
         self._H[self.iX, self.iX] = 1
         self._H[self.iY, self.iY] = 1
         self._Q = 0.01 ** 2 * np.eye(self.NUMVARS)  # Process noise covariance
-        self._gamma = 0.05  # Validation parameter
+        self._gamma = 16  # Validation parameter
         self._R = 7 ** 2 * np.eye(self.NUMMEAS)
+        self._lambda = 2  # Poisson dist of the number of targets in the clutter
         self._log_state = []
 
     def predict(self):
         """Predict the future state, measurement and covariance based on a known model"""
-        self._x = self._F.dot(self._x)
+        self._x = self._F.dot(self._x)  # + np.array([1, 2, 1, 3])
         self._z = self._H.dot(self._x)
         self._P = self._F.dot(self._P).dot(self._F.T) + self._Q
 
@@ -65,14 +67,34 @@ class ProbabilisticDataAssociationFilter:
         return validated_measurements
         # Todo: create measurements as list or set and create validation range
 
-    def associate(self):
-        pass
+    def associate(self, validated_measurement: set) -> tuple:
+        likelihood = []
+        beta = []
+        nu = []
+        for valid_meas in validated_measurement:
+            nu.append(valid_meas - self._z)
+            pdf = stats.multivariate_normal.pdf(valid_meas, self._z, self._S)
+            likelihood.append((pdf * self._Pd) / self._lambda)
+        total_likelihood = sum(likelihood)
+        for likely in likelihood:
+            beta.append(
+                likely / (1 - self._Pd * self._Pg + total_likelihood)
+            )
+        beta_zero = (1 - self._Pd * self._Pg) / (1 - self._Pd * self._Pg + total_likelihood)
+        return sum([beta_i * nu_i for beta_i, nu_i in zip(beta, nu)]), beta_zero
 
     def evaluate_association_probability(self):
         pass
 
     def update(self, measurements: set):
-        return self.validate(measurements)
+        valid_measurement = self.validate(measurements)
+        self._W = self._P.dot(self._H.T).dot(np.linalg.inv(self._S))
+        combined_innovation, beta_zero = self.associate(valid_measurement)
+        print(f'x before update {self._x}\n')
+        self._x = self._x + self._W.dot(combined_innovation)
+        print(f'x after update {self._x}\n')
+        # self._P =
+        return valid_measurement
 
     def run_filter(self, time):
         for _ in time:
@@ -85,5 +107,4 @@ class ProbabilisticDataAssociationFilter:
 
     @property
     def state_log(self) -> list:
-        return [(x, y)for x, y in self._log_state]
-
+        return [(x, y) for x, y in self._log_state]

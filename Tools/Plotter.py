@@ -62,7 +62,7 @@ class Plotter:
                 true_values(tuple): Containing the x,y vectors to plot"""
         true_values_kwargs = {'marker': 'o',
                               'color': 'b',
-                              'label': 'Measurements',
+                              'label': 'True values',
                               'markersize': 1}
         true_values_kwargs.update(kwargs)
         self.plot_data(true_values, **true_values_kwargs)

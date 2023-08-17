@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy import stats
 from Tools.Plotter import Plotter
 import matplotlib.pyplot as plt
 
@@ -16,29 +16,37 @@ pdaf = ProbabilisticDataAssociationFilter(
                 dt=0.1, Pd=0.8)
 
 plotter.set_axis(plot_title='Target Tracking')
+log_state = []
 saved_clutter = []
 validated_measurements = []
-for time in target.time_vector:
+
+# Generate random noise
+noise = stats.norm.rvs(1, 100, size=(len(target.time_vector), len(target.time_vector)))
+for i, time in enumerate(target.time_vector):
     [x_true, y_true, curr_time] = target.get_state(time)
+    log_state.append(pdaf.state[0:2])
     cluster = clutter.generate_clutter((x_true, y_true))
     saved_clutter.append(cluster)
-    cluster.add((x_true, y_true))  # Add noise to true measurements
+    cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
     pdaf.predict()
-    validated_measurements.append(pdaf.update(cluster))
-
+    if i % 10 == 0:
+        print('Updating')
+        validated_measurements.append(pdaf.update(cluster))
+print(log_state)
 x_vec, y_vec = target.x_trajectory, target.y_trajectory
 plotter.plot_true_values((x_vec, y_vec))
-
-for i, clutter_to_plot in enumerate(saved_clutter):
-    if i != 1:
-        plotter.plot_clutter(clutter_to_plot, **{'label': ''})
-    else:
-        plotter.plot_clutter(clutter_to_plot)
-for i, measurements_to_plot in enumerate(validated_measurements):
-    if measurements_to_plot and i != 1:
-        plotter.plot_measurements(measurements_to_plot, **{'label': ''})
-    elif measurements_to_plot:
-        plotter.plot_measurements(measurements_to_plot)
+plotter.plot_measurements(log_state, **{'color': 'm', 's': 10, 'label': 'PDAF'})
+if False:
+    for i, clutter_to_plot in enumerate(saved_clutter):
+        if i != 1:
+            plotter.plot_clutter(clutter_to_plot, **{'label': ''})
+        else:
+            plotter.plot_clutter(clutter_to_plot)
+    for i, measurements_to_plot in enumerate(validated_measurements):
+        if measurements_to_plot and i != 1:
+            plotter.plot_measurements(measurements_to_plot, **{'label': ''})
+        elif measurements_to_plot:
+            plotter.plot_measurements(measurements_to_plot)
 # pdaf.run_filter(target.time_vector)
 # plotter.plot_true_values((x_vec, y_vec))
 # plotter.plot_measurements(pdaf.state_log)
