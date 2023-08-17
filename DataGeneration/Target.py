@@ -3,7 +3,6 @@ import numpy as np
 
 class Target:
     """Simulates a non-maneuvering target with constant velocity"""
-
     def __init__(self, initial_x: float,
                  initial_y: float,
                  dt: float,
@@ -12,12 +11,12 @@ class Target:
                  velocity_y: float) -> None:
         """
         Args:
-            initial_x - initial location on x axis [m]
-            initial_y - initial location on y axis [m]
-            steps - number of steps in the simulation
-            simulation_duration - overall time of simulation
-            velocity_x - velocity on the x axis [m/s]
-            velocity_y - velocity on the y axis [m/s]
+            initial_x(float): initial location on x axis [m]
+            initial_y(float): initial location on y axis [m]
+            dt(float): advancement in time
+            simulation_duration(float): overall time of simulation
+            velocity_x(float): velocity on the x axis [m/s]
+            velocity_y(float): velocity on the y axis [m/s]
         """
         self._x = initial_x
         self._y = initial_y
@@ -32,7 +31,7 @@ class Target:
         self.initiate()
 
     def initiate(self) -> None:
-        """Run simulation through time and create the trajectory vecotrs"""
+        """Run simulation through time and create the trajectory vectors"""
         for curr_time in self._time_vector:
             if curr_time > self._time:
                 break
