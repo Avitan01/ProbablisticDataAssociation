@@ -9,7 +9,7 @@ from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import Proba
 
 plotter = Plotter()
 target = Target(initial_x=0.0, initial_y=0.0, dt=0.1, simulation_duration=10,
-                initial_vx=2, initial_vy=3, system_variance=5)
+                initial_vx=2, initial_vy=3, system_variance=20)
 clutter = Clutter(dist_type='Normal', std=0.5)
 pdaf = ProbabilisticDataAssociationFilter(
     initial_x=0.0, initial_y=0.0, initial_v_x=2, initial_v_y=3,
@@ -27,9 +27,9 @@ for i, time in enumerate(target.time_vector):
     cluster = clutter.generate_clutter((x_true, y_true))
     cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
     pdaf.predict()
+    log_state.append(pdaf.state[0:2])
     if i % 10 == 0:
         validated = pdaf.update(cluster)
-        log_state.append(pdaf.state[0:2])
         saved_clutter.append(cluster)
         validated_measurements.append(validated)
 
@@ -56,7 +56,7 @@ if to_plot_or_not_to_plot['validated measurements']:
         else:
             plotter.plot_measurements(measurements_to_plot)
 if to_plot_or_not_to_plot['estimated values']:
-    plotter.plot_measurements(log_state, **{'color': 'm', 's': 15, 'label': 'PDAF'})
+    plotter.plot_measurements(log_state, **{'color': 'm', 's': 6, 'label': 'PDAF'})
 
 plotter.add_grid()
 plotter.add_labels()
