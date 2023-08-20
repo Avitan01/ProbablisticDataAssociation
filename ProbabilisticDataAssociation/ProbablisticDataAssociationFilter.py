@@ -5,16 +5,12 @@ from scipy import special
 
 class ProbabilisticDataAssociationFilter:
     """Implement the PDA filter under the assumption mentioned"""
-    iX = 0
-    iY = 1
-    NUMMEAS = iY + 1
-    iVX = 2
-    iVY = 3
-    NUMVARS = iVY + 1
 
-    def __init__(self, initial_x: float, initial_y: float,
-                 initial_v_x: float, initial_v_y: float,
-                 dt: float, Pd: float) -> None:
+    def __init__(self, number_of_state_variables: int, initial_state: tuple,
+                 initial_covariance_magnitude: float, transition_matrix: np.array,
+                 Pd: float, Pg: float, observation_matrix: np.array, number_of_measurement_variables: int,
+                 process_noise_gain: float, measurement_noise_gain: float, validation_size: float,
+               ) -> None:
         """Initialize filter class
             Args:
                 initial_x(float): Initial x position of the tracked target in 2D space.
@@ -23,28 +19,24 @@ class ProbabilisticDataAssociationFilter:
                 initial_v_y(float): lll
                 dt(float): Time interval
                 Pd(float): The probability of detecting the true target."""
+        self.NUMVARS = number_of_state_variables
         self._x = np.zeros(self.NUMVARS)  # State vector
-        self._x[self.iX] = initial_x
-        self._x[self.iY] = initial_y
-        self._x[self.iVX] = initial_v_x
-        self._x[self.iVY] = initial_v_y
-        self._P = 1000 * np.eye(self.NUMVARS)
+        for i, initial_val in enumerate(initial_state):
+            self._x[i] = initial_val
+        self._P = initial_covariance_magnitude * np.eye(self.NUMVARS)
+        self._F = transition_matrix  # Transition matrix
         self._z = []
         self._S = []  # Innovation
+        self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._V = []
         self._W = []  # Gain
-        self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._Pd = Pd  # Probability for detection
-        self._Pg = 0.97  # Factor for probability
-        self._F = np.eye(self.NUMVARS)  # Transition matrix
-        self._F[self.iX, self.iVX] = dt
-        self._F[self.iY, self.iVY] = dt
-        self._H = np.zeros((self.NUMMEAS, self.NUMVARS))  # Observation matrix
-        self._H[self.iX, self.iX] = 1
-        self._H[self.iY, self.iY] = 1
-        self._Q = 0.01 ** 2 * np.eye(self.NUMVARS)  # Process noise covariance
-        self._gamma = 16  # Validation parameter
-        self._R = 7 ** 2 * np.eye(self.NUMMEAS)
+        self._Pg = Pg  # Factor for probability
+        self.NUMMEAS = number_of_measurement_variables
+        self._H = observation_matrix # Observation matrix
+        self._Q = process_noise_gain * np.eye(self.NUMVARS)  # Process noise covariance
+        self._R = measurement_noise_gain * np.eye(self.NUMMEAS)
+        self._gamma = validation_size  # Validation parameter
         self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
 
