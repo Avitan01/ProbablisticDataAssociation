@@ -38,8 +38,6 @@ class Clutter:
                 self._x_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
                 self._y_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
             case 'log normal':
-
-
                 self._x_dist = dist.lognorm(s=self.std, scale=np.exp(mean_x))
                 self._y_dist = dist.lognorm(s=self.std, scale=np.exp(mean_y))
 
@@ -51,8 +49,6 @@ class Clutter:
         radius_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE)
         x_clutter = radius_clutter * np.cos(angles)
         y_clutter = radius_clutter * np.sin(angles)
-        # x_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE) + mean[0]
-        # y_clutter = self._y_dist.rvs(size=self.CLUTTER_SIZE) + mean[1]
         clutter = {(x_clutter[idx] + mean[0], y_clutter[idx] + mean[1])
                    for idx in range(self.CLUTTER_SIZE)}
         return clutter
