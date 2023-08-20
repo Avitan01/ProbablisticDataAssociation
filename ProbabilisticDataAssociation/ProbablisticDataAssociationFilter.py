@@ -125,5 +125,9 @@ class ProbabilisticDataAssociationFilter:
         return self._x
 
     @property
+    def covariance(self) -> np.array:
+        return self._P
+
+    @property
     def state_log(self) -> list:
         return [values for values in self._log_state]

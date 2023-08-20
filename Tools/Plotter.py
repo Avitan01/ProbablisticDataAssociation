@@ -107,6 +107,7 @@ class Plotter:
         plt.show()
 
     def animate_plot(self, i: int, data_dict: dict):
+        # Todo: Fix labeling
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         self.set_axis(plot_title='Target Tracking')
         self.ax.set_xlim(-15, 40)  # Set your desired x-axis limits

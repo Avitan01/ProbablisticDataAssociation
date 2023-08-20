@@ -2,6 +2,7 @@ from scipy import stats
 from Tools.Plotter import Plotter
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from matplotlib.patches import Ellipse
 import numpy as np
 
 from DataGeneration.Target import Target
@@ -14,7 +15,7 @@ if __name__ == '__main__':
     dt = 0.1
     target = Target(
         initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=10,
-        initial_vx=2, initial_vy=3, system_variance=20
+        initial_vx=2, initial_vy=3, system_variance=10
     )
     clutter = Clutter(
         dist_type='uniform', std=0.5
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     state_size = 4
     #                 x    y   vx   vy
     initial_state = (0.0, 0.0, 2.0, 3.0)
-    initial_covariance_magnitude = 1000
+    initial_covariance_magnitude = 10
     transition_matrix = np.array(
         [[1, 0, dt, 0],
          [0, 1, 0, dt],
@@ -50,6 +51,7 @@ if __name__ == '__main__':
 
     plotter.set_axis(plot_title='Target Tracking')
     log_state = []
+    log_cov = []
     saved_clutter = []
     validated_measurements = []
     updated_pdaf = []
@@ -64,6 +66,7 @@ if __name__ == '__main__':
         # Predict
         pdaf.predict()
         log_state.append(pdaf.state[0:2])
+        log_cov.append(np.linalg.eig(pdaf.covariance))
         # Measure every 2 seconds
         if i % 20 == 0:
             # Update
@@ -74,8 +77,14 @@ if __name__ == '__main__':
     # End simulation
     # Plotting
     x_vec, y_vec = target.x_trajectory, target.y_trajectory
-    plot_type = {'static': False,
-                 'animate': True
+
+    # plotme = Plotter()
+    # + (x_vec[i] - log_state[i][0])
+    # state_tilde = [y_vec[i] - log_state[i][1] for i in range(len(y_vec))]
+    # plotme.plot_data((target.time_vector, log_cov), scatter=False)
+
+    plot_type = {'static': True,
+                 'animate': False
                  }
     # Static plotting
     to_plot_or_not_to_plot = {
@@ -83,7 +92,8 @@ if __name__ == '__main__':
         'estimated values': True,
         'validated measurements': True,
         'clutter': True,
-        'updated estimate': True
+        'updated estimate': True,
+        'covariance': False
     }
     # Animate simulation
     data_dict = {
@@ -115,6 +125,27 @@ if __name__ == '__main__':
                                                        's': 20,
                                                        'label': 'Updating PDAF',
                                                        'marker': '+'})
+        if to_plot_or_not_to_plot['covariance']:
+            # Choose a scale factor
+            scale_factor = 1
+            # for eigvalues in log_cov:
+                # Plot the ellipse
+            eigvals = log_cov[50][0]
+            ell = Ellipse(xy=(x_points[50], y_points[50]), width=np.sqrt(eigvals[0]) , height=np.sqrt(eigvals[1]), angle=0,
+                          color='r')
+            ell.set_alpha(0.1)
+            plt.gca().add_artist(ell)
+            # Todo: understand the proper way to plot the cov
+
+            # x_points, y_points = zip(*log_state)
+            # x_cov = [x for x, y in log_cov]
+            # y_cov = [y for x, y in log_cov]
+            # x_point_cov = [point + cov for point, cov in zip(x_points, x_cov)]
+            # y_point_cov = [point - cov for point, cov in zip(y_points, y_cov)]
+            # x_point_cov_minus = [point - cov for point, cov in zip(x_points, x_cov)]
+            # y_point_cov_minus = [point + cov for point, cov in zip(y_points, y_cov)]
+            # plotter.plot_covariance((x_point_cov, y_point_cov))
+            # plotter.plot_covariance((x_point_cov_minus, y_point_cov_minus))
 
         plotter.add_grid()
         plotter.add_labels()
