@@ -13,12 +13,18 @@ class ProbabilisticDataAssociationFilter:
                  ) -> None:
         """Initialize filter class
             Args:
-                initial_x(float): Initial x position of the tracked target in 2D space.
-                initial_y(float): Initial y position of the tracked target in 2D space.
-                initial_v_x(float): iii
-                initial_v_y(float): lll
-                dt(float): Time interval
-                Pd(float): The probability of detecting the true target."""
+                number_of_state_variables(int): The size of state vector.
+                initial_state(tuple): A vector of the initial states.
+                initial_covariance_magnitude(float): Magnitude of the initial covariance of state.
+                transition_matrix(np.array): A properly sized matrix representing the dynamics of the system.
+                Pd(float): The probability of the target being detected.
+                Pg(float): The probability of the target being in the validation area.
+                observation_matrix(np.array): A properly sized matrix representing the states observation dynamics.
+                number_of_measurement_variables(int): The size of the measurement vector.
+                process_noise_gain(float): Gain of the process noise matrix Q.
+                measurement_noise_gain(float): Gain of the measurement noise matrix R.
+                validation_size(float): Size defining the validation region.
+              """
         self.NUMVARS = number_of_state_variables
         self._x = np.zeros(self.NUMVARS)  # State vector
         for i, initial_val in enumerate(initial_state):
@@ -29,7 +35,7 @@ class ProbabilisticDataAssociationFilter:
         self._S = []  # Innovation
         self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._V = []
-        self._W = []  # Gain
+        self._W = np.zeros((1, 1))  # Gain
         self._Pd = Pd  # Probability for detection
         self._Pg = Pg  # Factor for probability
         self.NUMMEAS = number_of_measurement_variables
@@ -42,14 +48,16 @@ class ProbabilisticDataAssociationFilter:
 
     def predict(self):
         """Predict the future state, measurement and covariance based on a known model"""
-        self._x = self._F.dot(self._x)  # + np.array([1, 2, 1, 3])
+        self._x = self._F.dot(self._x)
         self._z = self._H.dot(self._x)
         self._P = self._F.dot(self._P).dot(self._F.T) + self._Q
 
     def validate(self, measurements: set) -> set:
         """Validate the incoming measurements and define the innovation
             Args:
-                measurements(set): A set of measurements containing tuples with the x, y measurements of each point."""
+                measurements(set): A set of measurements containing tuples with the measurements of each point.
+            Return:
+                set: Set of tuples representing all the validated measurements. """
         self._S = self._H.dot(self._P).dot(self._H.T) + self._R
         validated_measurements = set()
         for measurement in measurements:
@@ -58,9 +66,16 @@ class ProbabilisticDataAssociationFilter:
                 validated_measurements.add(measurement)
         self._measurements.append(validated_measurements)
         return validated_measurements
-        # Todo: create measurements as list or set and create validation range
 
     def associate(self, validated_measurement: set) -> tuple:
+        """Associate the validated measurements based on the probabilities of them being target originated.
+            Args:
+                validated_measurement(set): Set of tuples containing the validated measurements.
+            Return:
+                tuple:
+                    sum(innovation_series) - Combined innovation of all the measurements.
+                    beta_zero - The likelihood of the target not being validated.
+                    spread_of_covariance - The innovation spread across the clutter."""
         likelihood = []
         beta = []
         nu = []
@@ -81,17 +96,22 @@ class ProbabilisticDataAssociationFilter:
         if innovation_series:
             sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
             spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
+            spread_of_covariance = self._W.dot(spread_of_cov).dot(self._W.T)
         else:
-            return np.zeros((2,)), beta_zero, np.zeros((2, 2))
-        return sum(innovation_series), beta_zero, spread_of_cov
+            return np.zeros((self.NUMMEAS,)), beta_zero, np.zeros(self._P.shape)
+        return sum(innovation_series), beta_zero, spread_of_covariance
 
-    def update(self, measurements: set):
+    def update(self, measurements: set) -> set:
+        """Update the state and covariance based on the incoming measurements.
+            Args:
+                measurements(set): A set of tuples with the incoming measurements.
+            Return:
+                set: A set of tuples containing the validated measurements."""
         valid_measurement = self.validate(measurements)
         self._W = self._P.dot(self._H.T).dot(np.linalg.inv(self._S))
-        combined_innovation, beta_zero, spread_cov = self.associate(valid_measurement)
+        combined_innovation, beta_zero, spread_of_covariance = self.associate(valid_measurement)
         self._x = self._x + self._W.dot(combined_innovation)
         P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
-        spread_of_covariance = self._W.dot(spread_cov).dot(self._W.T)
         self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
         return valid_measurement
 
@@ -106,4 +126,4 @@ class ProbabilisticDataAssociationFilter:
 
     @property
     def state_log(self) -> list:
-        return [(x, y) for x, y in self._log_state]
+        return [values for values in self._log_state]
