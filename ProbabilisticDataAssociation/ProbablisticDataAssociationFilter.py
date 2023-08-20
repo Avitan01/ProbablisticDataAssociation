@@ -10,7 +10,7 @@ class ProbabilisticDataAssociationFilter:
                  initial_covariance_magnitude: float, transition_matrix: np.array,
                  Pd: float, Pg: float, observation_matrix: np.array, number_of_measurement_variables: int,
                  process_noise_gain: float, measurement_noise_gain: float, validation_size: float,
-               ) -> None:
+                 ) -> None:
         """Initialize filter class
             Args:
                 initial_x(float): Initial x position of the tracked target in 2D space.
@@ -33,7 +33,7 @@ class ProbabilisticDataAssociationFilter:
         self._Pd = Pd  # Probability for detection
         self._Pg = Pg  # Factor for probability
         self.NUMMEAS = number_of_measurement_variables
-        self._H = observation_matrix # Observation matrix
+        self._H = observation_matrix  # Observation matrix
         self._Q = process_noise_gain * np.eye(self.NUMVARS)  # Process noise covariance
         self._R = measurement_noise_gain * np.eye(self.NUMMEAS)
         self._gamma = validation_size  # Validation parameter
@@ -92,7 +92,7 @@ class ProbabilisticDataAssociationFilter:
         self._x = self._x + self._W.dot(combined_innovation)
         P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
         spread_of_covariance = self._W.dot(spread_cov).dot(self._W.T)
-        self._P = beta_zero*self._P + (1-beta_zero)*P_correct + spread_of_covariance
+        self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
         return valid_measurement
 
     def run_filter(self, time):
