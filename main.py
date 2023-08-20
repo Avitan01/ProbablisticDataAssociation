@@ -9,7 +9,7 @@ from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import Proba
 
 plotter = Plotter()
 target = Target(initial_x=0.0, initial_y=0.0, dt=0.1, simulation_duration=10,
-                velocity_x=2, velocity_y=3)
+                initial_vx=2, initial_vy=3, system_variance=5)
 clutter = Clutter(dist_type='Normal', std=0.5)
 pdaf = ProbabilisticDataAssociationFilter(
     initial_x=0.0, initial_y=0.0, initial_v_x=2, initial_v_y=3,
