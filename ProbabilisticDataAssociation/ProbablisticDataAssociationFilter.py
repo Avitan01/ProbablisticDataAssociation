@@ -85,23 +85,19 @@ class ProbabilisticDataAssociationFilter:
                 likely / (1 - self._Pd * self._Pg + total_likelihood)
             )
         beta_zero = (1 - self._Pd * self._Pg) / (1 - self._Pd * self._Pg + total_likelihood)
-
-        #Todo - nu is a row vector, need to change to col vector then update the transpose like in thoery
         innovation_series = [beta_i * nu_i for beta_i, nu_i in zip(beta, nu)]  # vector nu_i * beta_i
-        sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
-        spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
+        if innovation_series:
+            sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
+            spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
+        else:
+            return np.zeros((2,)), beta_zero, np.zeros((2, 2))
         return sum(innovation_series), beta_zero, spread_of_cov
-
-    def evaluate_association_probability(self):
-        pass
 
     def update(self, measurements: set):
         valid_measurement = self.validate(measurements)
         self._W = self._P.dot(self._H.T).dot(np.linalg.inv(self._S))
         combined_innovation, beta_zero, spread_cov = self.associate(valid_measurement)
-        print(f'x before update {self._x}\n')
         self._x = self._x + self._W.dot(combined_innovation)
-        print(f'x after update {self._x}\n')
         P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
         spread_of_covariance = self._W.dot(spread_cov).dot(self._W.T)
         self._P = beta_zero*self._P + (1-beta_zero)*P_correct + spread_of_covariance
