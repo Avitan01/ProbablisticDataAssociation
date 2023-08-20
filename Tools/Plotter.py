@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib
+from matplotlib import animation
+
 import addcopyfighandler
 import numpy as np
 
@@ -97,6 +99,60 @@ class Plotter:
                              'label': '$\sigma$'}
         covariance_kwargs.update(kwargs)
         self.plot_data(covariance, **covariance_kwargs)
+
+    def animate(self, frame_length: int, data_dict: dict):
+        anim = animation.FuncAnimation(self.fig, self.animate_plot, fargs=(data_dict,),
+                                       frames=frame_length, interval=100,
+                                       )
+        plt.show()
+
+    def animate_plot(self, i: int,  data_dict: dict):
+        true_value, validated_measurement, estimated, clutter = False, False, False, False
+        self.set_axis(plot_title='Target Tracking')
+        self.ax.set_xlim(-20, 50)  # Set your desired x-axis limits
+        self.ax.set_ylim(-20, 50)
+        length = {}
+        for key, value in data_dict.items():
+            match key.lower():
+                case 'true values':
+                    true_value = True
+                    x_vec, y_vec = value
+                    length['true values'] = len(x_vec)
+                case 'measurements':
+                    validated_measurement = True
+                    validated_measurements = value
+                    length['measurements'] = len(validated_measurements)
+                case 'estimated value':
+                    estimated = True
+                    estimated_state = value
+                    length['estimated value'] = len(estimated_state)
+                case 'clutter':
+                    clutter = True
+                    clutter_data = value
+                    length['clutter'] = len(clutter_data)
+        # plt.cla()
+        max_length_val = max(length.values())
+        min_length_val = min(length.values())
+        # max_length = [key for key, value in length.items() if value == max(length.values())]
+        # min_length = [key for key, value in length.items() if value == min(length.values())]
+        if true_value:
+            if i % (max_length_val // length['true values']) == 0:
+                idx = i // (max_length_val // length['true values'])
+                self.plot_true_values((x_vec[0:idx], y_vec[0:idx]), **{'label': ''})
+        if validated_measurement:
+            if i % (max_length_val // length['measurements']) == 0:
+                idx = i // (max_length_val // length['measurements'])
+                self.plot_measurements(validated_measurements[idx], **{'label': ''})
+        if estimated:
+            if i % (max_length_val // length['estimated value']) == 0:
+                idx = i // (max_length_val // length['estimated value'])
+                self.plot_measurements(estimated_state[idx], **{'color': 'm', 's': 15, 'label': ''})
+        if clutter:
+            if i % (max_length_val // length['clutter']) == 0:
+                idx = i // (max_length_val // length['clutter'])
+                self.plot_clutter(clutter_data[idx], **{'label': ''})
+        self.add_grid()
+        self.add_labels(False)
 
     @staticmethod
     def show_plot():

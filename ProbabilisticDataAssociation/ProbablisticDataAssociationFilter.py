@@ -28,7 +28,7 @@ class ProbabilisticDataAssociationFilter:
         self._x[self.iY] = initial_y
         self._x[self.iVX] = initial_v_x
         self._x[self.iVY] = initial_v_y
-        self._P = 10 * np.eye(self.NUMVARS)
+        self._P = 1000 * np.eye(self.NUMVARS)
         self._z = []
         self._S = []  # Innovation
         self._V = []
@@ -43,7 +43,7 @@ class ProbabilisticDataAssociationFilter:
         self._H[self.iX, self.iX] = 1
         self._H[self.iY, self.iY] = 1
         self._Q = 0.01 ** 2 * np.eye(self.NUMVARS)  # Process noise covariance
-        self._gamma = 0.05  # Validation parameter
+        self._gamma = 16  # Validation parameter
         self._R = 7 ** 2 * np.eye(self.NUMMEAS)
         self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
@@ -72,7 +72,7 @@ class ProbabilisticDataAssociationFilter:
         likelihood = []
         beta = []
         nu = []
-        c_hypersphere = np.pi**(self.NUMMEAS/2) / special.gamma((self.NUMMEAS/2)+1)
+        c_hypersphere = np.pi ** (self.NUMMEAS / 2) / special.gamma((self.NUMMEAS / 2) + 1)
         self._V = c_hypersphere * self._gamma ** (self.NUMVARS / 2) * np.sqrt(np.linalg.det(self._S))
         self._lambda = len(validated_measurement) / self._V
         for valid_meas in validated_measurement:
@@ -87,10 +87,10 @@ class ProbabilisticDataAssociationFilter:
         beta_zero = (1 - self._Pd * self._Pg) / (1 - self._Pd * self._Pg + total_likelihood)
 
         #Todo - nu is a row vector, need to change to col vector then update the transpose like in thoery
-        innovation_series = [beta_i * nu_i for beta_i, nu_i in zip(beta, nu)] #vector nu_i * beta_i
+        innovation_series = [beta_i * nu_i for beta_i, nu_i in zip(beta, nu)]  # vector nu_i * beta_i
         sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
-        spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array((innovation_series))))
-        return sum(innovation_series), beta_zero , spread_of_cov
+        spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
+        return sum(innovation_series), beta_zero, spread_of_cov
 
     def evaluate_association_probability(self):
         pass
@@ -102,8 +102,8 @@ class ProbabilisticDataAssociationFilter:
         print(f'x before update {self._x}\n')
         self._x = self._x + self._W.dot(combined_innovation)
         print(f'x after update {self._x}\n')
-        P_correct = self._P - self._W.dot(self._S).dot((self._W).T)
-        spread_of_covariance = self._W.dot(spread_cov).dot((self._W).T)
+        P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
+        spread_of_covariance = self._W.dot(spread_cov).dot(self._W.T)
         self._P = beta_zero*self._P + (1-beta_zero)*P_correct + spread_of_covariance
         return valid_measurement
 
