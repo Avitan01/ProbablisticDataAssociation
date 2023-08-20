@@ -106,11 +106,11 @@ class Plotter:
                                        )
         plt.show()
 
-    def animate_plot(self, i: int,  data_dict: dict):
-        true_value, validated_measurement, estimated, clutter = False, False, False, False
+    def animate_plot(self, i: int, data_dict: dict):
+        true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         self.set_axis(plot_title='Target Tracking')
-        self.ax.set_xlim(-20, 50)  # Set your desired x-axis limits
-        self.ax.set_ylim(-20, 50)
+        self.ax.set_xlim(-15, 40)  # Set your desired x-axis limits
+        self.ax.set_ylim(-15, 40)
         length = {}
         for key, value in data_dict.items():
             match key.lower():
@@ -124,21 +124,26 @@ class Plotter:
                     length['measurements'] = len(validated_measurements)
                 case 'estimated value':
                     estimated = True
-                    estimated_state = value
-                    length['estimated value'] = len(estimated_state)
+                    estimated_state_x, estimated_state_y = value
+                    length['estimated value'] = len(estimated_state_x)
                 case 'clutter':
                     clutter = True
                     clutter_data = value
                     length['clutter'] = len(clutter_data)
+                case 'updated estimate':
+                    updated_estimate = True
+                    updated_pdaf = value
+                    length['updated estimate'] = len(updated_pdaf)
         # plt.cla()
         max_length_val = max(length.values())
-        min_length_val = min(length.values())
-        # max_length = [key for key, value in length.items() if value == max(length.values())]
-        # min_length = [key for key, value in length.items() if value == min(length.values())]
         if true_value:
             if i % (max_length_val // length['true values']) == 0:
                 idx = i // (max_length_val // length['true values'])
                 self.plot_true_values((x_vec[0:idx], y_vec[0:idx]), **{'label': ''})
+        if clutter:
+            if i % (max_length_val // length['clutter']) == 0:
+                idx = i // (max_length_val // length['clutter'])
+                self.plot_clutter(clutter_data[idx], **{'label': ''})
         if validated_measurement:
             if i % (max_length_val // length['measurements']) == 0:
                 idx = i // (max_length_val // length['measurements'])
@@ -146,13 +151,18 @@ class Plotter:
         if estimated:
             if i % (max_length_val // length['estimated value']) == 0:
                 idx = i // (max_length_val // length['estimated value'])
-                self.plot_measurements(estimated_state[idx], **{'color': 'm', 's': 15, 'label': ''})
-        if clutter:
-            if i % (max_length_val // length['clutter']) == 0:
-                idx = i // (max_length_val // length['clutter'])
-                self.plot_clutter(clutter_data[idx], **{'label': ''})
+                self.plot_data((estimated_state_x[0:idx], estimated_state_y[0:idx]),
+                               **{'color': 'm', 'markersize': 1, 'label': ''})
+        if updated_estimate:
+            if i % (max_length_val // length['updated estimate']) == 0:
+                idx = i // (max_length_val // length['updated estimate'])
+                self.plot_measurements(updated_pdaf[idx], **{'color': 'orange',
+                                                             's': 20,
+                                                             'label': '',
+                                                             'marker': '+'})
+
         self.add_grid()
-        self.add_labels(False)
+        self.add_labels([keys for keys in data_dict.keys()])
 
     @staticmethod
     def show_plot():
@@ -161,6 +171,7 @@ class Plotter:
 
 if __name__ == "__main__":
     from matplotlib.patches import Ellipse
+
     # Define the center and radii of the ellipse
     center = (0, 0)
     radii = (2, 1)

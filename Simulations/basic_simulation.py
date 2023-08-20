@@ -56,20 +56,28 @@ if __name__ == '__main__':
 
     # Generate random noise
     noise = stats.norm.rvs(1, 0.5, size=(len(target.time_vector), len(target.time_vector)))
+    # Start simulation
     for i, time in enumerate(target.time_vector):
         [x_true, y_true, curr_time] = target.get_state(time)
         cluster = clutter.generate_clutter((x_true, y_true))
         cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
+        # Predict
         pdaf.predict()
         log_state.append(pdaf.state[0:2])
+        # Measure every 2 seconds
         if i % 20 == 0:
+            # Update
             validated = pdaf.update(cluster)
             updated_pdaf.append(pdaf.state[0:2])
             saved_clutter.append(cluster)
             validated_measurements.append(validated)
-
+    # End simulation
+    # Plotting
     x_vec, y_vec = target.x_trajectory, target.y_trajectory
-
+    plot_type = {'static': False,
+                 'animate': True
+                 }
+    # Static plotting
     to_plot_or_not_to_plot = {
         'true values': True,
         'estimated values': True,
@@ -77,61 +85,40 @@ if __name__ == '__main__':
         'clutter': True,
         'updated estimate': True
     }
-    if to_plot_or_not_to_plot['true values']:
-        plotter.plot_true_values((x_vec, y_vec))
-    if to_plot_or_not_to_plot['clutter']:
-        for i, clutter_to_plot in enumerate(saved_clutter):
-            if i != 1:
-                plotter.plot_clutter(clutter_to_plot, **{'label': ''})
-            else:
-                plotter.plot_clutter(clutter_to_plot)
-    if to_plot_or_not_to_plot['validated measurements']:
-        for i, measurements_to_plot in enumerate(validated_measurements):
-            if i != 1:
-                plotter.plot_measurements(measurements_to_plot, **{'label': ''})
-            else:
-                plotter.plot_measurements(measurements_to_plot)
-    if to_plot_or_not_to_plot['estimated values']:
-        x_points, y_points = zip(*log_state)
-        plotter.plot_true_values((x_points, y_points), **{'color': 'm', 'markersize': 1, 'label': 'PDAF'})
-    if to_plot_or_not_to_plot['updated estimate']:
-        plotter.plot_measurements(updated_pdaf, **{'color': 'orange',
-                                                   's': 20,
-                                                   'label': 'Updating PDAF',
-                                                   'marker': '+'})
-
-    plotter.add_grid()
-    plotter.add_labels()
-
+    # Animate simulation
     data_dict = {
         'true values': (x_vec, y_vec),
         'measurements': validated_measurements,
-        # 'estimated value': log_state,
-        'clutter': saved_clutter
-    }
+        'estimated value': ([x for x, y in log_state], [y for x, y in log_state]),
+        'clutter': saved_clutter,
+    }  # 'updated estimate': updated_pdaf
+    if plot_type['static']:
+        if to_plot_or_not_to_plot['true values']:
+            plotter.plot_true_values((x_vec, y_vec))
+        if to_plot_or_not_to_plot['clutter']:
+            for i, clutter_to_plot in enumerate(saved_clutter):
+                if i != 1:
+                    plotter.plot_clutter(clutter_to_plot, **{'label': ''})
+                else:
+                    plotter.plot_clutter(clutter_to_plot)
+        if to_plot_or_not_to_plot['validated measurements']:
+            for i, measurements_to_plot in enumerate(validated_measurements):
+                if i != 1:
+                    plotter.plot_measurements(measurements_to_plot, **{'label': ''})
+                else:
+                    plotter.plot_measurements(measurements_to_plot)
+        if to_plot_or_not_to_plot['estimated values']:
+            x_points, y_points = zip(*log_state)
+            plotter.plot_data((x_points, y_points), **{'color': 'm', 'markersize': 1, 'label': 'PDAF'})
+        if to_plot_or_not_to_plot['updated estimate']:
+            plotter.plot_measurements(updated_pdaf, **{'color': 'orange',
+                                                       's': 20,
+                                                       'label': 'Updating PDAF',
+                                                       'marker': '+'})
 
-
-    # plotter.animate(len(target.time_vector), data_dict)
-
-    def animate(j, idx=0):
-
-        # plotter = Plotter()
-        plotter.set_axis(plot_title='Target Tracking')
-        plotter.ax.set_xlim(-20, 50)  # Set your desired x-axis limits
-        plotter.ax.set_ylim(-20, 50)
-        if j % 10 == 0:
-            # plt.cla()
-            idx = j // 10
-            plotter.plot_clutter(saved_clutter[idx], **{'label': ''})
-            plotter.plot_measurements(validated_measurements[idx], **{'label': ''})
-            plotter.plot_measurements(log_state[idx], **{'color': 'm', 's': 15, 'label': ''})
-        plotter.plot_true_values((x_vec[idx:j], y_vec[idx:j]), **{'label': ''})
         plotter.add_grid()
-        plotter.add_labels(False)
+        plotter.add_labels()
 
-
-    # anim = animation.FuncAnimation(plotter.fig, animate,
-    #                                frames=len(target.time_vector), interval=100,
-    #                                )
-
+    if plot_type['animate']:
+        plotter.animate(len(target.time_vector), data_dict)
     plt.show()
