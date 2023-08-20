@@ -2,27 +2,30 @@ import numpy as np
 
 
 class Target:
-    """Simulates a non-maneuvering target with constant velocity"""
+    """Simulates a non-maneuvering target with near constant velocity and system noise as acceleration"""
     def __init__(self, initial_x: float,
                  initial_y: float,
                  dt: float,
                  simulation_duration: float,
-                 velocity_x: float,
-                 velocity_y: float) -> None:
+                 initial_vx: float,
+                 initial_vy: float,
+                 system_variance: float) -> None:
         """
         Args:
             initial_x(float): initial location on x axis [m]
             initial_y(float): initial location on y axis [m]
             dt(float): advancement in time
             simulation_duration(float): overall time of simulation
-            velocity_x(float): velocity on the x axis [m/s]
-            velocity_y(float): velocity on the y axis [m/s]
+            initial_vx(float): initial velocity on the x axis [m/s]
+            initial_vy(float): initial velocity on the y axis [m/s]
+            system_variance(float): the variance of the noise that drives the system
         """
         self._x = initial_x
         self._y = initial_y
         self._time = simulation_duration
-        self._Vx = velocity_x
-        self._Vy = velocity_y
+        self._Vx = initial_vx
+        self._Vy = initial_vy
+        self._noise_var = system_variance
         self._trajectory_x = []
         self._trajectory_y = []
         self._time_vector = []
@@ -37,8 +40,9 @@ class Target:
                 break
             self._trajectory_x.append(self._x)
             self._trajectory_y.append(self._y)
-            self._x = self._x + self._Vx * self._dt
-            self._y = self._y + self._Vy * self._dt
+            accel = np.random.normal(scale = self._noise_var) 
+            self._x = self._x + self._Vx * self._dt + 0.5 * accel * self._dt ** 2
+            self._y = self._y + self._Vy * self._dt + 0.5 * accel * self._dt ** 2
 
     def get_state(self, time: float) -> list | None:
         """Get the location of the target at a given time.
