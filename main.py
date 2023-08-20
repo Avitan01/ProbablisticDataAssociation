@@ -10,7 +10,7 @@ from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import Proba
 plotter = Plotter()
 target = Target(initial_x=0.0, initial_y=0.0, dt=0.1, simulation_duration=10,
                 initial_vx=2, initial_vy=3, system_variance=20)
-clutter = Clutter(dist_type='Normal', std=0.5)
+clutter = Clutter(dist_type='uniform', std=0.5)
 pdaf = ProbabilisticDataAssociationFilter(
     initial_x=0.0, initial_y=0.0, initial_v_x=2, initial_v_y=3,
     dt=0.1, Pd=0.8)
@@ -19,7 +19,7 @@ plotter.set_axis(plot_title='Target Tracking')
 log_state = []
 saved_clutter = []
 validated_measurements = []
-
+updated_pdaf = []
 # Generate random noise
 noise = stats.norm.rvs(1, 0.5, size=(len(target.time_vector), len(target.time_vector)))
 for i, time in enumerate(target.time_vector):
@@ -28,8 +28,9 @@ for i, time in enumerate(target.time_vector):
     cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
     pdaf.predict()
     log_state.append(pdaf.state[0:2])
-    if i % 10 == 0:
+    if i % 20 == 0:
         validated = pdaf.update(cluster)
+        updated_pdaf.append(pdaf.state[0:2])
         saved_clutter.append(cluster)
         validated_measurements.append(validated)
 
@@ -39,7 +40,8 @@ to_plot_or_not_to_plot = {
     'true values': True,
     'estimated values': True,
     'validated measurements': True,
-    'clutter': True
+    'clutter': True,
+    'updated estimate': True
 }
 if to_plot_or_not_to_plot['true values']:
     plotter.plot_true_values((x_vec, y_vec))
@@ -56,7 +58,13 @@ if to_plot_or_not_to_plot['validated measurements']:
         else:
             plotter.plot_measurements(measurements_to_plot)
 if to_plot_or_not_to_plot['estimated values']:
-    plotter.plot_measurements(log_state, **{'color': 'm', 's': 6, 'label': 'PDAF'})
+    x_points, y_points = zip(*log_state)
+    plotter.plot_true_values((x_points, y_points), **{'color': 'm', 'markersize': 1, 'label': 'PDAF'})
+if to_plot_or_not_to_plot['updated estimate']:
+    plotter.plot_measurements(updated_pdaf, **{'color': 'orange',
+                                               's': 20,
+                                               'label': 'Updating PDAF',
+                                               'marker': '+'})
 
 plotter.add_grid()
 plotter.add_labels()

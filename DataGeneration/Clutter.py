@@ -29,7 +29,6 @@ class Clutter:
             case "normal":
                 self._x_dist = dist.norm(loc=mean_x, scale=self.std)
                 self._y_dist = dist.norm(loc=mean_y, scale=self.std)
-
             case "uniform":
                 # mean = (a+b)/2 , var = (b-a)^2 / 12
                 # if we want mean = 0 then a = -b, meaning: var = 4b^2 / 12 = b^2 / 3
@@ -38,13 +37,22 @@ class Clutter:
                 low_bound = -high_bound
                 self._x_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
                 self._y_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
+            case 'log normal':
+
+
+                self._x_dist = dist.lognorm(s=self.std, scale=np.exp(mean_x))
+                self._y_dist = dist.lognorm(s=self.std, scale=np.exp(mean_y))
 
     def generate_clutter(self, mean: tuple) -> set:
         """Returns a clutter with chosen distribution for object Clutter and a given mean
             Args:
                 mean - the (x,y) coordinate that are then mean of the distribution """
-        x_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE) + mean[0]
-        y_clutter = self._y_dist.rvs(size=self.CLUTTER_SIZE) + mean[1]
-        clutter = {(x_clutter[idx], y_clutter[idx])
+        angles = np.random.uniform(0, 2 * np.pi, size=self.CLUTTER_SIZE)
+        radius_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE)
+        x_clutter = radius_clutter * np.cos(angles)
+        y_clutter = radius_clutter * np.sin(angles)
+        # x_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE) + mean[0]
+        # y_clutter = self._y_dist.rvs(size=self.CLUTTER_SIZE) + mean[1]
+        clutter = {(x_clutter[idx] + mean[0], y_clutter[idx] + mean[1])
                    for idx in range(self.CLUTTER_SIZE)}
         return clutter
