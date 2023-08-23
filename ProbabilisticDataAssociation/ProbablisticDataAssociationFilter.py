@@ -9,7 +9,7 @@ class ProbabilisticDataAssociationFilter:
     def __init__(self, number_of_state_variables: int, initial_state: tuple,
                  initial_covariance_magnitude: float, transition_matrix: np.array,
                  Pd: float, Pg: float, observation_matrix: np.array, number_of_measurement_variables: int,
-                 process_noise_gain: float, measurement_noise_gain: float, validation_size: float,
+                 process_noise_gain: float, measurement_noise_gain: float,
                  ) -> None:
         """Initialize filter class
             Args:
@@ -23,7 +23,6 @@ class ProbabilisticDataAssociationFilter:
                 number_of_measurement_variables(int): The size of the measurement vector.
                 process_noise_gain(float): Gain of the process noise matrix Q.
                 measurement_noise_gain(float): Gain of the measurement noise matrix R.
-                validation_size(float): Size defining the validation region.
               """
         self.NUMVARS = number_of_state_variables
         self._x = np.zeros(self.NUMVARS)  # State vector
@@ -35,14 +34,15 @@ class ProbabilisticDataAssociationFilter:
         self._S = []  # Innovation
         self._measurements = []  # List of sets, each index is the time and the sets are all the measurements at that time
         self._V = []
-        self._W = np.zeros((1, 1))  # Gain
+        self._W = []  # Gain
         self._Pd = Pd  # Probability for detection
         self._Pg = Pg  # Factor for probability
         self.NUMMEAS = number_of_measurement_variables
         self._H = observation_matrix  # Observation matrix
         self._Q = process_noise_gain * np.eye(self.NUMVARS)  # Process noise covariance
         self._R = measurement_noise_gain * np.eye(self.NUMMEAS)
-        self._gamma = validation_size  # Validation parameter
+        # self._gamma = (stats.norm.ppf(1 - (1 - self._Pg) / self.NUMMEAS)) ** 2  # Validation parameter
+        self._gamma = 0  # Validation parameter
         self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
 
@@ -60,6 +60,7 @@ class ProbabilisticDataAssociationFilter:
                 set: Set of tuples representing all the validated measurements. """
         self._S = self._H.dot(self._P).dot(self._H.T) + self._R
         validated_measurements = set()
+        self._gamma = (np.sqrt(np.linalg.det(self._S))/len(measurements)) * (stats.norm.ppf(1 - (1 - self._Pg) / self.NUMMEAS))
         for measurement in measurements:
             validation_region = (measurement - self._z).T.dot(np.linalg.inv(self._S)).dot(measurement - self._z)
             if validation_region <= self._gamma:
@@ -84,7 +85,7 @@ class ProbabilisticDataAssociationFilter:
         self._lambda = len(validated_measurement) / self._V
         for valid_meas in validated_measurement:
             nu.append(valid_meas - self._z)
-            pdf = stats.multivariate_normal.pdf(valid_meas, self._z, self._S)
+            pdf = stats.multivariate_normal.pdf(valid_meas, mean=self._z, cov=self._S)
             likelihood.append((pdf * self._Pd) / self._lambda)
         total_likelihood = sum(likelihood)
         for likely in likelihood:
@@ -94,6 +95,7 @@ class ProbabilisticDataAssociationFilter:
         beta_zero = (1 - self._Pd * self._Pg) / (1 - self._Pd * self._Pg + total_likelihood)
         innovation_series = [beta_i * nu_i for beta_i, nu_i in zip(beta, nu)]  # vector nu_i * beta_i
         if innovation_series:
+            # sum_beta_double_nu = sum([nu_i * nu_i.T * beta_i for beta_i, nu_i in zip(beta, nu)])
             sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
             spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
             spread_of_covariance = self._W.dot(spread_of_cov).dot(self._W.T)
@@ -114,11 +116,6 @@ class ProbabilisticDataAssociationFilter:
         P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
         self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
         return valid_measurement
-
-    def run_filter(self, time):
-        for _ in time:
-            self._log_state.append(self._x)
-            self.predict()
 
     @property
     def state(self) -> np.array:
