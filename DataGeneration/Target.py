@@ -43,6 +43,8 @@ class Target:
             accel = np.random.normal(scale=self._noise_var)
             self._x = self._x + self._Vx * self._dt + 0.5 * accel * self._dt ** 2
             self._y = self._y + self._Vy * self._dt + 0.5 * accel * self._dt ** 2
+            self._Vx += accel * self._dt
+            self._Vy += accel * self._dt
 
     def get_state(self, time: float) -> list | None:
         """Get the location of the target at a given time.
