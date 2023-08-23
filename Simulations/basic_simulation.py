@@ -1,7 +1,6 @@
 from scipy import stats
 from Tools.Plotter import Plotter
 import matplotlib.pyplot as plt
-from matplotlib import animation
 from matplotlib.patches import Ellipse
 import numpy as np
 
@@ -12,18 +11,33 @@ from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import Proba
 if __name__ == '__main__':
     # Initiate parameters
     plotter = Plotter()
+    plotter.set_axis(plot_title='Target Tracking basic simulation',
+                     x_label='x [m]', y_label='y [m]')
+    plot_type = {'static': True,
+                 'animate': False
+                 }
+    # Static plotting
+    to_plot_or_not_to_plot = {
+        'true values': True,
+        'estimated values': True,
+        'validated measurements': True,
+        'clutter': True,
+        'updated estimate': False,
+        'covariance': False
+    }
+
     dt = 0.1
     target = Target(
-        initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=10,
-        initial_vx=2, initial_vy=3, system_variance=10
+        initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=20,
+        initial_vx=1, initial_vy=2, system_variance=0.1
     )
     clutter = Clutter(
-        dist_type='uniform', std=0.5
+        dist_type='uniform', std=20
     )
     # Define PDAF parameters
     state_size = 4
     #                 x    y   vx   vy
-    initial_state = (0.0, 0.0, 2.0, 3.0)
+    initial_state = (0.0, 0.0, 1.0, 2.0)
     initial_covariance_magnitude = 10
     transition_matrix = np.array(
         [[1, 0, dt, 0],
@@ -32,7 +46,7 @@ if __name__ == '__main__':
          [0, 0, 0, 1]]
     )
     Pd = 0.8  # Probability for detection
-    Pg = 0.97  # Factor for probability
+    Pg = 0.66  # Factor for probability
     observation_size = 2
     observation_matrix = np.array(
         [[1, 0, 0, 0],
@@ -41,15 +55,13 @@ if __name__ == '__main__':
 
     process_noise_gain = 0.01 ** 2
     measurement_noise_gain = 7 ** 2
-    validation_size = 16  # AKA gamma
 
     pdaf = ProbabilisticDataAssociationFilter(
         state_size, initial_state, initial_covariance_magnitude,
         transition_matrix, Pd, Pg, observation_matrix, observation_size,
-        process_noise_gain, measurement_noise_gain, validation_size
+        process_noise_gain, measurement_noise_gain
     )
 
-    plotter.set_axis(plot_title='Target Tracking')
     log_state = []
     log_cov = []
     saved_clutter = []
@@ -66,9 +78,9 @@ if __name__ == '__main__':
         # Predict
         pdaf.predict()
         log_state.append(pdaf.state[0:2])
-        log_cov.append(np.linalg.eig(pdaf.covariance))
+        log_cov.append(pdaf.covariance)
         # Measure every 2 seconds
-        if i % 20 == 0:
+        if i % 10 == 0:
             # Update
             validated = pdaf.update(cluster)
             updated_pdaf.append(pdaf.state[0:2])
@@ -77,24 +89,6 @@ if __name__ == '__main__':
     # End simulation
     # Plotting
     x_vec, y_vec = target.x_trajectory, target.y_trajectory
-
-    # plotme = Plotter()
-    # + (x_vec[i] - log_state[i][0])
-    # state_tilde = [y_vec[i] - log_state[i][1] for i in range(len(y_vec))]
-    # plotme.plot_data((target.time_vector, log_cov), scatter=False)
-
-    plot_type = {'static': True,
-                 'animate': False
-                 }
-    # Static plotting
-    to_plot_or_not_to_plot = {
-        'true values': True,
-        'estimated values': True,
-        'validated measurements': True,
-        'clutter': True,
-        'updated estimate': True,
-        'covariance': False
-    }
     # Animate simulation
     data_dict = {
         'true values': (x_vec, y_vec),
@@ -126,15 +120,38 @@ if __name__ == '__main__':
                                                        'label': 'Updating PDAF',
                                                        'marker': '+'})
         if to_plot_or_not_to_plot['covariance']:
+            # Calculate the eigenvalues and eigenvectors
+            factor = len(log_state)//len(log_cov)
+            for i, cov in enumerate(log_cov):
+                # if i + 1 == len(log_state):
+                eigenvalues, eigenvectors = np.linalg.eig(cov)
+                # print(eigenvalues[0])
+                ell = Ellipse(xy=(log_state[i*factor][0], log_state[i*factor][1]), width=np.sqrt(eigenvalues[0]), height=np.sqrt(eigenvalues[1]), angle=0,
+                              color='r')
+                ell.set_alpha(0.1)
+                plt.gca().add_artist(ell)
+
+
+            # Plot the ellipse
+            # plt.plot(eigenvectors[0] * eigenvalues[0] + log_state[0][0],
+            #          eigenvectors[1] * eigenvalues[1] + log_state[0][1])
+
+            # Add labels and title
+            # plt.xlabel("x")
+            # plt.ylabel("y")
+            # plt.title("Ellipse Boundary")
+            # plt.show()
+
+            # plotter.plot_covariance(log_cov[0])
             # Choose a scale factor
-            scale_factor = 1
-            # for eigvalues in log_cov:
-                # Plot the ellipse
-            eigvals = log_cov[50][0]
-            ell = Ellipse(xy=(x_points[50], y_points[50]), width=np.sqrt(eigvals[0]) , height=np.sqrt(eigvals[1]), angle=0,
-                          color='r')
-            ell.set_alpha(0.1)
-            plt.gca().add_artist(ell)
+            # scale_factor = 1
+            # # for eigvalues in log_cov:
+            #     # Plot the ellipse
+            # eigvals = log_cov[50][0]
+            # ell = Ellipse(xy=(x_points[50], y_points[50]), width=np.sqrt(eigvals[0]) , height=np.sqrt(eigvals[1]), angle=0,
+            #               color='r')
+            # ell.set_alpha(0.1)
+            # plt.gca().add_artist(ell)
             # Todo: understand the proper way to plot the cov
 
             # x_points, y_points = zip(*log_state)
