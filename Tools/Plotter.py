@@ -64,7 +64,7 @@ class Plotter:
                 true_values(tuple): Containing the x,y vectors to plot"""
         true_values_kwargs = {'marker': 'o',
                               'color': 'b',
-                              'label': 'True values',
+                              'label': 'Target',
                               'markersize': 1}
         true_values_kwargs.update(kwargs)
         self.plot_data(true_values, **true_values_kwargs)
@@ -75,7 +75,7 @@ class Plotter:
                 measurements: Containing the x,y vectors to plot"""
         measurements_kwargs = {'marker': 'o',
                                'color': 'c',
-                               'label': 'Measurements',
+                               'label': 'Valid Measurements',
                                's': 5}
         measurements_kwargs.update(kwargs)
         self.plot_data(measurements, scatter=True, **measurements_kwargs)
@@ -98,11 +98,18 @@ class Plotter:
                              'color': 'r',
                              'label': '$\sigma$'}
         covariance_kwargs.update(kwargs)
-        self.plot_data(covariance, **covariance_kwargs)
+        # Calculate the eigenvalues and eigenvectors
+        eigenvalues, eigenvectors = np.linalg.eig(covariance)
+
+        # Plot the ellipse
+        plt.plot(eigenvectors[0] * eigenvalues[0], eigenvectors[1] * eigenvalues[1])
+
+
+        # self.plot_data(covariance, **covariance_kwargs)
 
     def animate(self, frame_length: int, data_dict: dict):
         anim = animation.FuncAnimation(self.fig, self.animate_plot, fargs=(data_dict,),
-                                       frames=frame_length, interval=100,
+                                       frames=frame_length, interval=0.1,
                                        )
         plt.show()
 
@@ -110,8 +117,8 @@ class Plotter:
         # Todo: Fix labeling
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         self.set_axis(plot_title='Target Tracking')
-        self.ax.set_xlim(-15, 40)  # Set your desired x-axis limits
-        self.ax.set_ylim(-15, 40)
+        self.ax.set_xlim(-30, 30)  # Set your desired x-axis limits
+        self.ax.set_ylim(-30, 50)
         length = {}
         for key, value in data_dict.items():
             match key.lower():
