@@ -9,7 +9,7 @@ import numpy as np
 class Clutter:
     """creates a clutter of measurements based on chosen distribution. choose the distribution
     then to center it around a desired point using the generate_clutter function"""
-    CLUTTER_SIZE = 100
+    CLUTTER_SIZE = 20
 
     def __init__(self,
                  dist_type: str,
@@ -27,7 +27,7 @@ class Clutter:
 
         match self.dist.lower():
             case "normal":
-                self._x_dist = dist.norm(loc=mean_x, scale=self.std)
+                self._x_dist = dist.norm(mean_x, self.std)
                 self._y_dist = dist.norm(loc=mean_y, scale=self.std)
             case "uniform":
                 # mean = (a+b)/2 , var = (b-a)^2 / 12
@@ -35,11 +35,10 @@ class Clutter:
                 # therefore  b = -a = sqrt(3*var)
                 high_bound = np.sqrt(3 * self.std)
                 low_bound = -high_bound
-                self._x_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
-                self._y_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
+                # self._x_dist = dist.uniform(loc=low_bound, scale=high_bound - low_bound)
+                self._x_dist = dist.uniform(mean_x, self.std)
             case 'log normal':
                 self._x_dist = dist.lognorm(s=self.std, scale=np.exp(mean_x))
-                self._y_dist = dist.lognorm(s=self.std, scale=np.exp(mean_y))
 
     def generate_clutter(self, mean: tuple) -> set:
         """Returns a clutter with chosen distribution for object Clutter and a given mean
