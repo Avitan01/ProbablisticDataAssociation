@@ -3,7 +3,7 @@ from Simulations.monte_carlo_simulation import monte_carlo
 
 
 if __name__ == '__main__':
-    Pd_vals = [0.1, 0.4, 0.7]
+    Pd_vals = np.linspace(0.1,0.9,10)
     Pd_results = []
     for Pd in Pd_vals:
         param_dict = {
