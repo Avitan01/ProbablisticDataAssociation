@@ -10,12 +10,10 @@
 #   - Estimation of each variable with +- std(sqrt(P))
 from scipy import stats
 import numpy as np
-import pandas as pd
 from DataGeneration.Target import Target
 from DataGeneration.Clutter import Clutter
 from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import ProbabilisticDataAssociationFilter
 from Tools.Plotter import Plotter
-from matplotlib import pyplot as plt
 
 
 def monte_carlo(N: int, kwargs_dict: dict) -> dict:
@@ -63,7 +61,7 @@ def monte_carlo(N: int, kwargs_dict: dict) -> dict:
 
 
 if __name__ == '__main__':
-    kwargs_dict = {
+    arguments_dict = {
         'target': {
             'initial_x': 0.0,
             'initial_y': 0.0,
@@ -99,23 +97,25 @@ if __name__ == '__main__':
         }
     }
     N = 2
-    results = monte_carlo(N, kwargs_dict)
+    results = monte_carlo(N, arguments_dict)
     mean_x = np.mean(results['x state'], axis=0)
     mean_y = np.mean(results['y state'], axis=0)
     std_x = np.sqrt(np.mean(results['x var'], axis=0))
     std_y = np.sqrt(np.mean(results['y var'], axis=0))
 
     plotter = Plotter()
+    plotter.add_subplot([2, 1])
     plotter.plot_data((results['time'], mean_x), **{'label': '$\mu$'})
     plotter.plot_data((results['time'], std_x), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
     plotter.plot_data((results['time'], -std_x), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
                      plot_title=f'Monte carlo simulation N={N} in x direction')
+    plotter.set_lim(x_limits=[mean_x[0], mean_x[-1]], y_limits=[-max(std_x), max(std_x)])
     plotter.add_grid()
     plotter.add_labels()
-    plotter.show_plot()
-
-    plotter = Plotter()
+    # plotter.show_plot()
+    plotter.add_subplot([2, 1])
+    # plotter = Plotter()
     plotter.plot_data((results['time'], mean_y), **{'label': '$\mu$'})
     plotter.plot_data((results['time'], std_y), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
     plotter.plot_data((results['time'], -std_y), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
