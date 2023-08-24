@@ -29,7 +29,7 @@ if __name__ == '__main__':
     dt = 0.1
     target = Target(
         initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=20,
-        initial_vx=1, initial_vy=2, system_variance=0.1
+        initial_vx=1, initial_vy=2, system_variance=0.01 ** 2
     )
     clutter = Clutter(
         dist_type='uniform', std=20
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     noise = stats.norm.rvs(1, 0.5, size=(len(target.time_vector), len(target.time_vector)))
     # Start simulation
     for i, time in enumerate(target.time_vector):
-        [x_true, y_true, curr_time] = target.get_state(time)
+        [x_true, y_true, _, _ curr_time] = target.get_state(time)
         cluster = clutter.generate_clutter((x_true, y_true))
         cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
         # Predict
@@ -80,7 +80,7 @@ if __name__ == '__main__':
         log_state.append(pdaf.state[0:2])
         log_cov.append(pdaf.covariance)
         # Measure every 2 seconds
-        if i % 10 == 0:
+        if i % 20 == 0:
             # Update
             validated = pdaf.update(cluster)
             updated_pdaf.append(pdaf.state[0:2])
