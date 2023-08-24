@@ -23,12 +23,12 @@ if __name__ == '__main__':
         'validated measurements': True,
         'clutter': True,
         'updated estimate': False,
-        'covariance': False
+        'covariance': True
     }
 
     dt = 0.1
     target = Target(
-        initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=20,
+        initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=100,
         initial_vx=1, initial_vy=2, system_variance=0.01 ** 2
     )
     clutter = Clutter(
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     )
 
     process_noise_gain = 0.01 ** 2
-    measurement_noise_gain = 50 ** 2
+    measurement_noise_gain = 3 ** 2
 
     pdaf = ProbabilisticDataAssociationFilter(
         state_size, initial_state, initial_covariance_magnitude,
