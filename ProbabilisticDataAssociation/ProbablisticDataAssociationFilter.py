@@ -113,7 +113,8 @@ class ProbabilisticDataAssociationFilter:
         self._W = self._P.dot(self._H.T).dot(np.linalg.inv(self._S))
         combined_innovation, beta_zero, spread_of_covariance = self.associate(valid_measurement)
         self._x = self._x + self._W.dot(combined_innovation)
-        P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
+        # P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
+        P_correct = (np.eye(self._P.shape[0]) - self._W.dot(self._H)).dot(self._P)  # Josef's formula
         self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
         return valid_measurement
 
