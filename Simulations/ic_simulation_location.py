@@ -7,7 +7,7 @@ if __name__ == '__main__':
     param_dict = {
         'target': {
             'initial_x': 3.0,
-            'initial_y': 1.2,
+            'initial_y': 6.0,
             'dt': 0.1,
             'simulation_duration': 50,
             'initial_vx': 1,
@@ -20,7 +20,9 @@ if __name__ == '__main__':
         },
         'pdaf': {
             'number_of_state_variables': 4,
+            #                 x=3  y=6
             'initial_state': (0.0, 0.0, 1.0, 2.0),
+            # Increase cov - reduce state error
             'initial_covariance_magnitude': 10,
             'transition_matrix': np.array(
                 [[1, 0, 0.1, 0],
@@ -46,23 +48,47 @@ if __name__ == '__main__':
     std_x = np.sqrt(np.mean(results['x var'], axis=0))
     std_y = np.sqrt(np.mean(results['y var'], axis=0))
 
+    mean_vx = np.mean(results['vx state'], axis=0)
+    mean_vy = np.mean(results['vy state'], axis=0)
+    std_vx = np.sqrt(np.mean(results['vx var'], axis=0))
+    std_vy = np.sqrt(np.mean(results['vy var'], axis=0))
+
     plotter = Plotter()
-    plotter.add_subplot([2, 1])
+    plotter.add_subplot([2, 2])
     plotter.plot_data((results['time'], mean_x), **{'label': '$\mu$'})
     plotter.plot_data((results['time'], std_x), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
     plotter.plot_data((results['time'], -std_x), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
-                     plot_title=f'Monte carlo simulation N={N} with Missmatch at x Location')
+                     plot_title=f'Monte carlo simulation N={N} with Missmatch at X location')
     plotter.add_grid()
     plotter.add_labels()
     # plotter.show_plot()
-    plotter.add_subplot([2, 1])
+    plotter.add_subplot([2, 2])
     # plotter = Plotter()
     plotter.plot_data((results['time'], mean_y), **{'label': '$\mu$'})
     plotter.plot_data((results['time'], std_y), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
     plotter.plot_data((results['time'], -std_y), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{y}$',
-                     plot_title=f'Monte carlo simulation N={N} Missmatch at y Location')
+                     plot_title=f'Monte carlo simulation N={N} with Missmatch at Y location')
     plotter.add_grid()
     plotter.add_labels()
+
+    plotter.add_subplot([2, 2])
+    plotter.plot_data((results['time'], mean_vx), **{'label': '$\mu$'})
+    plotter.plot_data((results['time'], std_vx), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
+    plotter.plot_data((results['time'], -std_vx), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
+    plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vx}$',
+                     plot_title=f'Monte carlo simulation N={N} with Missmatch at X location')
+    plotter.add_grid()
+    plotter.add_labels()
+
+    plotter.add_subplot([2, 2])
+    plotter.plot_data((results['time'], mean_vy), **{'label': '$\mu$'})
+    plotter.plot_data((results['time'], std_vy), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
+    plotter.plot_data((results['time'], -std_vy), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
+    plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vy}$',
+                     plot_title=f'Monte carlo simulation N={N} with Missmatch at Y location')
+    plotter.add_grid()
+    plotter.add_labels()
+
     plotter.show_plot()
