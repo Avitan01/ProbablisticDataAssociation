@@ -40,7 +40,7 @@ if __name__ == '__main__':
                 ),
                 'number_of_measurement_variables': 2,
                 'process_noise_gain': 0.01 ** 2,
-                'measurement_noise_gain': 7 ** 2
+                'measurement_noise_gain': 10 ** 2
             }
         }
         N = 100
