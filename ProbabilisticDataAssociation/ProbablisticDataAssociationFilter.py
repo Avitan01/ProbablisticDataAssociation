@@ -61,7 +61,8 @@ class ProbabilisticDataAssociationFilter:
                 set: Set of tuples representing all the validated measurements. """
         self._S = self._H.dot(self._P).dot(self._H.T) + self._R
         validated_measurements = set()
-        self._gamma = (np.sqrt(np.linalg.det(self._S))/len(measurements)) * (stats.norm.ppf(1 - (1 - self._Pg) / self.NUMMEAS))
+        self._gamma = (np.sqrt(np.linalg.det(self._S)) / len(measurements)) * (
+            stats.norm.ppf(1 - (1 - self._Pg) / self.NUMMEAS))
         for measurement in measurements:
             validation_region = (measurement - self._z).T.dot(np.linalg.inv(self._S)).dot(measurement - self._z)
             if validation_region <= self._gamma:
@@ -117,7 +118,38 @@ class ProbabilisticDataAssociationFilter:
         # P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
         P_correct = (np.eye(self._P.shape[0]) - self._W.dot(self._H)).dot(self._P)  # Josef's formula
         self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
+        new_Pd = self.find_optimal_pd()
+        if new_Pd != self._Pd:
+            print(f'Changed Pd from {self._Pd} to {new_Pd}')
+        self._Pd = new_Pd
         return valid_measurement
+
+    def calculate_snr(self):
+        # signal_power = np.linalg.norm(self._x)
+        signal_power = sum(np.linalg.norm(state_vector) ** 2 for state_vector in self._x) / self.NUMVARS
+        noise_power = np.linalg.det(self._R) + np.linalg.det(self._Q)
+        return signal_power // noise_power
+
+    def find_optimal_pd(self):
+        """Find the optimal Pd for a given SNR and Pfa."""
+        snr = self.calculate_snr()
+        # if snr:
+        #     breakpoint()
+        roc_curve = {
+            0: 0.1,
+            1: 0.2,
+            2: 0.3,
+            3: 0.4,
+            4: 0.5,
+            5: 0.6,
+            6: 0.7,
+            7: 0.8,
+            8: 0.9,
+            9: 1.0
+        }
+        if snr <= 9:
+            return roc_curve[snr]
+        return 1
 
     @property
     def state(self) -> np.array:
