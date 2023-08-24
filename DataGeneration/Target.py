@@ -28,6 +28,8 @@ class Target:
         self._noise_var = system_variance
         self._trajectory_x = []
         self._trajectory_y = []
+        self._velocity_x = []
+        self._velocity_y = []
         self._time_vector = []
         self._dt = dt
         self._time_vector = np.arange(0, self._time, self._dt)
@@ -40,6 +42,8 @@ class Target:
                 break
             self._trajectory_x.append(self._x)
             self._trajectory_y.append(self._y)
+            self._velocity_x.append(self._Vx)
+            self._velocity_y.append(self._Vy)
             accel = np.random.normal(scale=self._noise_var)
             self._x = self._x + self._Vx * self._dt + 0.5 * accel * self._dt ** 2
             self._y = self._y + self._Vy * self._dt + 0.5 * accel * self._dt ** 2
@@ -58,6 +62,8 @@ class Target:
         idx = np.argmin(np.abs(self._time_vector - time))
         return [self._trajectory_x[idx],
                 self._trajectory_y[idx],
+                self._velocity_x[idx],
+                self._velocity_y[idx],
                 self._time_vector[idx]]
 
     @property
