@@ -11,12 +11,13 @@ if __name__ == '__main__':
             'dt': 0.1,
             'simulation_duration': 50,
             'initial_vx': 0.1,
-            'initial_vy': 5,
+            'initial_vy': 6,
             'system_variance': 0.1
         },
         'clutter': {
             'dist_type': 'uniform',
-            'std': 20
+            'std': 20,
+            'clutter_size': 20,
         },
         'pdaf': {
             'number_of_state_variables': 4,
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at X velocity')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
     # plotter.show_plot()
     plotter.add_subplot([2, 2])
     # plotter = Plotter()
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{y}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at Y velocity')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.add_subplot([2, 2])
     plotter.plot_data((results['time'], mean_vx), **{'label': '$\mu$'})
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vx}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at X velocity')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.add_subplot([2, 2])
     plotter.plot_data((results['time'], mean_vy), **{'label': '$\mu$'})
@@ -89,6 +90,6 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vy}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at Y velocity')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.show_plot()

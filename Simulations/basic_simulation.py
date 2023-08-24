@@ -23,7 +23,7 @@ if __name__ == '__main__':
         'validated measurements': True,
         'clutter': True,
         'updated estimate': False,
-        'covariance': True
+        'covariance': False
     }
 
     dt = 0.1
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         initial_vx=1, initial_vy=2, system_variance=0.01 ** 2
     )
     clutter = Clutter(
-        dist_type='uniform', std=20
+        dist_type='uniform', std=20, clutter_size=20
     )
     # Define PDAF parameters
     state_size = 4
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     )
 
     process_noise_gain = 0.01 ** 2
-    measurement_noise_gain = 7 ** 2
+    measurement_noise_gain = 50 ** 2
 
     pdaf = ProbabilisticDataAssociationFilter(
         state_size, initial_state, initial_covariance_magnitude,

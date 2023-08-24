@@ -2,7 +2,7 @@ import numpy as np
 from Simulations.monte_carlo_simulation import monte_carlo
 from Tools.Plotter import Plotter
 
-sim_results =[]
+
 if __name__ == '__main__':
     param_dict = {
         'target': {
@@ -16,7 +16,8 @@ if __name__ == '__main__':
         },
         'clutter': {
             'dist_type': 'uniform',
-            'std': 20
+            'std': 20,
+            'clutter_size': 20,
         },
         'pdaf': {
             'number_of_state_variables': 4,
@@ -41,6 +42,7 @@ if __name__ == '__main__':
             'measurement_noise_gain': 7 ** 2
         }
     }
+    sim_results = []
     N = 100
     results = monte_carlo(N, param_dict)
     mean_x = np.mean(results['x state'], axis=0)
@@ -61,7 +63,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at X location')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
     # plotter.show_plot()
     plotter.add_subplot([2, 2])
     # plotter = Plotter()
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{y}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at Y location')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.add_subplot([2, 2])
     plotter.plot_data((results['time'], mean_vx), **{'label': '$\mu$'})
@@ -80,7 +82,7 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vx}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at X location')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.add_subplot([2, 2])
     plotter.plot_data((results['time'], mean_vy), **{'label': '$\mu$'})
@@ -89,6 +91,6 @@ if __name__ == '__main__':
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vy}$',
                      plot_title=f'Monte carlo simulation N={N} with Missmatch at Y location')
     plotter.add_grid()
-    plotter.add_labels()
+    plotter.add_labels(**{'loc': 'upper right'})
 
     plotter.show_plot()

@@ -14,7 +14,7 @@ class TestFilter(unittest.TestCase):
             initial_x=0.0, initial_y=0.0, dt=dt, simulation_duration=10,
             initial_vx=1, initial_vy=2, system_variance=0.1
         )
-        self.clutter = Clutter(dist_type='uniform', std=0.5)
+        self.clutter = Clutter(dist_type='uniform', std=0.5, clutter_size=20)
         self.state_size = 4
         #                 x    y   vx   vy
         initial_state = (0.0, 0.0, 1.0, 2.0)

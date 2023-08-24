@@ -9,11 +9,11 @@ import numpy as np
 class Clutter:
     """creates a clutter of measurements based on chosen distribution. choose the distribution
     then to center it around a desired point using the generate_clutter function"""
-    CLUTTER_SIZE = 20
 
     def __init__(self,
                  dist_type: str,
-                 std: float) -> None:
+                 std: float,
+                 clutter_size: int) -> None:
         """Args:
             dist_type(str): Distribution of the clutter. the options are:
                             "normal" - for normal distribution.
@@ -22,6 +22,7 @@ class Clutter:
          """
         self.dist = dist_type
         self.std = std
+        self.clutter_size = clutter_size
         mean_x = 0
         mean_y = 0
 
@@ -44,10 +45,10 @@ class Clutter:
         """Returns a clutter with chosen distribution for object Clutter and a given mean
             Args:
                 mean - the (x,y) coordinate that are then mean of the distribution """
-        angles = np.random.uniform(0, 2 * np.pi, size=self.CLUTTER_SIZE)
-        radius_clutter = self._x_dist.rvs(size=self.CLUTTER_SIZE)
+        angles = np.random.uniform(0, 2 * np.pi, size=self.clutter_size)
+        radius_clutter = self._x_dist.rvs(size=self.clutter_size)
         x_clutter = radius_clutter * np.cos(angles)
         y_clutter = radius_clutter * np.sin(angles)
         clutter = {(x_clutter[idx] + mean[0], y_clutter[idx] + mean[1])
-                   for idx in range(self.CLUTTER_SIZE)}
+                   for idx in range(self.clutter_size)}
         return clutter

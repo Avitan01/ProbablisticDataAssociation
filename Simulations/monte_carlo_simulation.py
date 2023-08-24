@@ -78,14 +78,15 @@ if __name__ == '__main__':
             'initial_x': 0.0,
             'initial_y': 0.0,
             'dt': 0.1,
-            'simulation_duration': 50,
+            'simulation_duration': 20,
             'initial_vx': 1,
             'initial_vy': 2,
             'system_variance': 0.01 ** 2
         },
         'clutter': {
             'dist_type': 'uniform',
-            'std': 20
+            'std': 20,
+            'clutter_size': 20,
         },
         'pdaf': {
             'number_of_state_variables': 4,
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                  [0, 0, 1, 0],
                  [0, 0, 0, 1]]
             ),
-            'Pd': 0.8,
+            'Pd': 0.95,
             'Pg': 0.66,
             'observation_matrix': np.array(
                 [[1, 0, 0, 0],
@@ -105,7 +106,7 @@ if __name__ == '__main__':
             ),
             'number_of_measurement_variables': 2,
             'process_noise_gain': 0.01 ** 2,
-            'measurement_noise_gain': 7 ** 2
+            'measurement_noise_gain': 7.9155 ** 2
         }
     }
     N = 50

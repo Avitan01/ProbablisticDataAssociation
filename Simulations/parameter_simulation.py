@@ -18,7 +18,8 @@ if __name__ == '__main__':
             },
             'clutter': {
                 'dist_type': 'uniform',
-                'std': 20
+                'std': 20,
+                'clutter_size': 20,
             },
             'pdaf': {
                 'number_of_state_variables': 4,

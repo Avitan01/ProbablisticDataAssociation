@@ -54,15 +54,15 @@ class Plotter:
         else:
             self.ax.plot(*data, **kwargs)
 
-    def add_labels(self, labels: list = None) -> None:
+    def add_labels(self, labels: list = None, **kwargs) -> None:
         """Add or show labels in a plot
             Args:
                 labels(list): All labels to present, if None will call
                  the leaned function to present labels attached to the plots"""
         if labels:
-            self.ax.legend(labels=labels)
+            self.ax.legend(labels=labels, **kwargs)
         else:
-            self.ax.legend()
+            self.ax.legend(**kwargs)
 
     def add_grid(self, activate=True) -> None:
         """Show or hide the grid, default is to show"""
