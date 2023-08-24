@@ -69,7 +69,7 @@ if __name__ == '__main__':
             'simulation_duration': 20,
             'initial_vx': 1,
             'initial_vy': 2,
-            'system_variance': 0.1
+            'system_variance': 0.01 ** 2
         },
         'clutter': {
             'dist_type': 'uniform',
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             'measurement_noise_gain': 7 ** 2
         }
     }
-    N = 2
+    N = 100
     results = monte_carlo(N, arguments_dict)
     mean_x = np.mean(results['x state'], axis=0)
     mean_y = np.mean(results['y state'], axis=0)
@@ -110,7 +110,6 @@ if __name__ == '__main__':
     plotter.plot_data((results['time'], -std_x), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
     plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
                      plot_title=f'Monte carlo simulation N={N} in x direction')
-    plotter.set_lim(x_limits=[mean_x[0], mean_x[-1]], y_limits=[-max(std_x), max(std_x)])
     plotter.add_grid()
     plotter.add_labels()
     # plotter.show_plot()

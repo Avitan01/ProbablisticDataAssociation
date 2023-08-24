@@ -16,13 +16,21 @@ class Plotter:
         fig_args = {'figsize': (8, 5)}
         fig_args.update(kwargs)
         self.dim = 2
+        self.subplot_num = 1
         self.fig = plt.figure(**fig_args)
         self.ax = self.fig.add_subplot(1, 1, 1)
         plt.draw()
 
+    def add_subplot(self, layout: list):
+        if self.subplot_num == 1:
+            self.ax.remove()
+        self.ax = self.fig.add_subplot(*layout, self.subplot_num)
+        self.subplot_num += 1
+        plt.tight_layout(pad=1.5, w_pad=0.5, h_pad=1.2)
+
     # General actions
     def set_axis(self, x_label="$x$", y_label="$y$", plot_title=None):
-        self.ax.axis('equal')
+        # self.ax.axis('equal')
         self.ax.set_xlabel(x_label)
         self.ax.set_ylabel(y_label)
         self.ax.set_title(plot_title)
@@ -103,7 +111,6 @@ class Plotter:
 
         # Plot the ellipse
         plt.plot(eigenvectors[0] * eigenvalues[0], eigenvectors[1] * eigenvalues[1])
-
 
         # self.plot_data(covariance, **covariance_kwargs)
 
