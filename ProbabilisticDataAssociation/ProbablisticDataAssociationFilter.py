@@ -45,6 +45,7 @@ class ProbabilisticDataAssociationFilter:
         self._gamma = 0  # Validation parameter
         self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
+        # self.CRLB = np.linalg.inv(np.mean(self._H.T.dot(np.linalg.inv(self._R)).dot(self._H)))
 
     def predict(self):
         """Predict the future state, measurement and covariance based on a known model"""

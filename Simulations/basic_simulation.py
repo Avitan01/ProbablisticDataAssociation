@@ -23,7 +23,7 @@ if __name__ == '__main__':
         'validated measurements': True,
         'clutter': True,
         'updated estimate': False,
-        'covariance': False
+        'covariance': True
     }
 
     dt = 0.1
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     noise = stats.norm.rvs(1, 0.5, size=(len(target.time_vector), len(target.time_vector)))
     # Start simulation
     for i, time in enumerate(target.time_vector):
-        [x_true, y_true, _, _ curr_time] = target.get_state(time)
+        [x_true, y_true, _, _, curr_time] = target.get_state(time)
         cluster = clutter.generate_clutter((x_true, y_true))
         cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
         # Predict

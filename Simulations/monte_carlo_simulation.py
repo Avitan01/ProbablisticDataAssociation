@@ -78,7 +78,7 @@ if __name__ == '__main__':
             'initial_x': 0.0,
             'initial_y': 0.0,
             'dt': 0.1,
-            'simulation_duration': 20,
+            'simulation_duration': 50,
             'initial_vx': 1,
             'initial_vy': 2,
             'system_variance': 0.01 ** 2
@@ -108,15 +108,16 @@ if __name__ == '__main__':
             'measurement_noise_gain': 7 ** 2
         }
     }
-    N = 100
+    N = 50
     results = monte_carlo(N, arguments_dict)
     mean_x = np.mean(results['x state'], axis=0)
     mean_y = np.mean(results['y state'], axis=0)
     std_x = np.sqrt(np.mean(results['x var'], axis=0))
+    # std_x = np.mean(results['x var'], axis=0)
     std_y = np.sqrt(np.mean(results['y var'], axis=0))
-
-    mean_vx = np.mean(results['vx state'], axis=0)
-    mean_vy = np.mean(results['vy state'], axis=0)
+    # std_y = np.mean(results['y var'], axis=0)
+    mean_vx = np.mean(results['vx state'] ** 2, axis=0)
+    mean_vy = np.mean(results['vy state'] ** 2, axis=0)
     std_vx = np.sqrt(np.mean(results['vx var'], axis=0))
     std_vy = np.sqrt(np.mean(results['vy var'], axis=0))
 
@@ -157,6 +158,6 @@ if __name__ == '__main__':
                      plot_title=f'Monte carlo simulation N={N} in y direction')
     plotter.add_grid()
     plotter.add_labels()
-
+    # plotter.set_global_axis('check')
     plotter.show_plot()
 

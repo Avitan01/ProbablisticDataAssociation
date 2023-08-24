@@ -26,9 +26,12 @@ class Plotter:
             self.ax.remove()
         self.ax = self.fig.add_subplot(*layout, self.subplot_num)
         self.subplot_num += 1
-        plt.tight_layout(pad=1.5, w_pad=0.5, h_pad=1.2)
+        plt.tight_layout(pad=2.0, w_pad=0.5, h_pad=1.2)
 
     # General actions
+    def set_global_axis(self, title: str):
+        self.fig.suptitle(title)
+
     def set_axis(self, x_label="$x$", y_label="$y$", plot_title=None):
         # self.ax.axis('equal')
         self.ax.set_xlabel(x_label)
