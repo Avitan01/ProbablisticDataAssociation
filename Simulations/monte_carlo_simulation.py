@@ -98,7 +98,7 @@ if __name__ == '__main__':
                  [0, 0, 1, 0],
                  [0, 0, 0, 1]]
             ),
-            'Pd': 0.95,
+            'Pd': 0.8,
             'Pg': 0.66,
             'observation_matrix': np.array(
                 [[1, 0, 0, 0],
@@ -106,7 +106,7 @@ if __name__ == '__main__':
             ),
             'number_of_measurement_variables': 2,
             'process_noise_gain': 0.01 ** 2,
-            'measurement_noise_gain': 7.9155 ** 2
+            'measurement_noise_gain': 3 ** 2
         }
     }
     N = 50
