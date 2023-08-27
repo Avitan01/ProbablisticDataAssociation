@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import animation
 
-import addcopyfighandler
+# import addcopyfighandler
 import numpy as np
 
 matplotlib.use('TkAgg')
@@ -89,7 +89,7 @@ class Plotter:
         self.plot_data(true_values, **true_values_kwargs)
 
     def plot_measurements(self, measurements: tuple | set | list, **kwargs) -> None:
-        """Plot a all measurements in a 2D plot
+        """Plot all measurements in a 2D plot
             Args:
                 measurements: Containing the x,y vectors to plot"""
         measurements_kwargs = {'marker': 'o',

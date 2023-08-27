@@ -45,7 +45,7 @@ if __name__ == '__main__':
          [0, 0, 1, 0],
          [0, 0, 0, 1]]
     )
-    Pd = 0.1  # Probability for detection
+    Pd = 0.8  # Probability for detection
     Pg = 0.66  # Factor for probability
     observation_size = 2
     observation_matrix = np.array(
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     )
 
     process_noise_gain = 0.01 ** 2
-    measurement_noise_gain = 3 ** 2
+    measurement_noise_gain = 7 ** 2
 
     pdaf = ProbabilisticDataAssociationFilter(
         state_size, initial_state, initial_covariance_magnitude,
