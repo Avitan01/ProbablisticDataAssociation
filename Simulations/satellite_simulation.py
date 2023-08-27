@@ -1,0 +1,153 @@
+from scipy import stats
+
+from DataGeneration.Satellite import Satellite
+from DataGeneration.SpaceClutter import SpaceClutter
+from Tools.Plotter import Plotter
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import numpy as np
+
+from DataGeneration.Target import Target
+from DataGeneration.Clutter import Clutter
+from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import ProbabilisticDataAssociationFilter
+
+if __name__ == '__main__':
+    plotter = Plotter()
+    plot_type = {'static': True,
+                 'animate': False
+                 }
+    # Static plotting
+    to_plot_or_not_to_plot = {
+        'true values': True,
+        'estimated values': True,
+        'validated measurements': False,
+        'clutter': False,
+        'updated estimate': False,
+        'covariance': False,
+        'earth': True
+    }
+
+    plotter.set_axis(plot_title='Satellite Tracking simulation',
+                     x_label='x [km]', y_label='y [km]')
+    dt = 60  # [s]
+    satellite = Satellite(
+        initial_r=1500,
+        initial_theta=90,
+        orbit_time=128 * 60,
+        dt=dt,
+        simulation_duration=2 * 60 * 60,
+        system_variance=10
+    )
+
+    clutter = SpaceClutter(
+        view_angle=[45, 135],
+        LEO_mean=2000,
+        GEO_mean=36000
+    )
+
+    # # Define PDAF parameters
+    state_size = 4
+    #                 r  , theta, r dot, theta dot
+    initial_state = (1500 + 6378, np.deg2rad(90), 0.0, (2 * np.pi) / (128 * 60))
+    initial_covariance_magnitude = 100
+    transition_matrix = np.array(
+        [[1, 0, 0, 0],
+         [0, 1, 0, dt],
+         [0, 0, 1, 0],
+         [0, 0, 0, 1]]
+    )
+    Pd = 0.95  # Probability for detection
+    Pg = 0.10  # Factor for probability
+    observation_size = 2
+    observation_matrix = np.array(
+        [[1, 0, 0, 0],
+         [0, 1, 0, 0]]
+    )
+
+    process_noise_gain = 1 ** 2
+    measurement_noise_gain = 10 ** 2
+
+    pdaf = ProbabilisticDataAssociationFilter(
+        state_size, initial_state, initial_covariance_magnitude,
+        transition_matrix, Pd, Pg, observation_matrix, observation_size,
+        process_noise_gain, measurement_noise_gain
+    )
+
+    log_state = []
+    log_cov = []
+    saved_clutter = []
+    validated_measurements = []
+    updated_pdaf = []
+
+    # Generate random noise
+    noise = stats.norm.rvs(1, 5, size=(len(satellite.time_vector), len(satellite.time_vector)))
+    # Start simulation
+    for i, time in enumerate(satellite.time_vector):
+        [r_true, theta_true, _, _, curr_time] = satellite.get_state_radial(time)
+        cluster_x_y, cluster_radial = clutter.generate_clutter()
+        cluster_radial.add((r_true + noise[0][i], theta_true))  # Add noise to true measurements
+        # Predict
+        log_state.append(pdaf.state[0:2])
+        log_cov.append(pdaf.covariance)
+        pdaf.predict()
+
+        if np.deg2rad(100) > theta_true > np.deg2rad(80):
+            # Update
+            validated = pdaf.update(cluster_radial)
+            updated_pdaf.append(pdaf.state[0:2])
+            saved_clutter.append(cluster_x_y)
+            validated_measurements.append({(radius * np.cos(angle), radius * np.sin(angle)) for radius, angle in validated})
+    # # End simulation
+
+    if plot_type['static']:
+        if to_plot_or_not_to_plot['true values']:
+            plotter.plot_true_values((satellite.x_trajectory, satellite.y_trajectory), **{'markersize': 2})
+        if to_plot_or_not_to_plot['clutter']:
+            for i, clutter_to_plot in enumerate(saved_clutter):
+                if i != 1:
+                    plotter.plot_clutter(clutter_to_plot, **{'label': ''})
+                else:
+                    plotter.plot_clutter(clutter_to_plot)
+        if to_plot_or_not_to_plot['validated measurements']:
+            for i, measurements_to_plot in enumerate(validated_measurements):
+                if i != 1:
+                    plotter.plot_measurements(measurements_to_plot, **{'label': ''})
+                else:
+                    plotter.plot_measurements(measurements_to_plot)
+        if to_plot_or_not_to_plot['estimated values']:
+            r_points, theta_points = zip(*log_state)
+            x_points = r_points * (np.cos(theta_points))
+            y_points = r_points * (np.sin(theta_points))
+            plotter.plot_measurements((x_points, y_points), **{'color': 'm'})
+            # plotter.plot_data((x_points, y_points), **{'color': 'm', 'markersize': 1, 'label': 'PDAF'})
+        if to_plot_or_not_to_plot['updated estimate']:
+            plotter.plot_measurements(updated_pdaf, **{'color': 'orange',
+                                                       's': 20,
+                                                       'label': 'Updating PDAF',
+                                                       'marker': '+'})
+        if to_plot_or_not_to_plot['earth']:
+            plotter.plot_earth()
+    # plotter.plot_true_values((satellite.x_trajectory, satellite.y_trajectory))
+    # plotter.plot_clutter(cluster)
+
+    plotter.set_limits()
+    plotter.add_grid()
+    plotter.add_labels()
+
+    # # Plotting
+    x_vec, y_vec = satellite.x_trajectory, satellite.y_trajectory
+    # # Animate simulation
+    r_points, theta_points = zip(*log_state)
+    x_points = r_points * (np.cos(theta_points))
+    y_points = r_points * (np.sin(theta_points))
+    data_dict = {
+        'true values': (x_vec, y_vec),
+        # 'measurements': validated_measurements,
+        'estimated value': (x_points, y_points),
+        # 'clutter': saved_clutter,
+        'radial': theta_points,
+    }  # 'updated estimate': updated_pdaf
+
+    if plot_type['animate']:
+        plotter.animate_satellite(len(satellite.time_vector), data_dict)
+    plt.show()

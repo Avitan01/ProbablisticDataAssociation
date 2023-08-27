@@ -9,6 +9,8 @@ matplotlib.use('TkAgg')
 
 
 class Plotter:
+    EARTH_RADIUS = 6378
+
     """Create plots for different use cases"""
 
     # Todo: add a limit function for adjusting the limits
@@ -131,6 +133,12 @@ class Plotter:
                                        )
         plt.show()
 
+    def animate_satellite(self, frame_length: int, data_dict: dict):
+        anim = animation.FuncAnimation(self.fig, self.animate_satellite_plot, fargs=(data_dict,),
+                                       frames=frame_length, interval=0.1,
+                                       )
+        plt.show()
+
     def animate_plot(self, i: int, data_dict: dict):
         # Todo: Fix labeling
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
@@ -190,11 +198,79 @@ class Plotter:
         self.add_grid()
         self.add_labels([keys for keys in data_dict.keys()])
 
-    def plot_earth(self, earth_radius):
-        image = plt.imread('earth_from_space.png')
+    def animate_satellite_plot(self, i: int, data_dict: dict):
+        # Todo: Fix labeling
+        true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
+        radial_estimate = False
+        self.set_axis(plot_title='Satellite Tracking')
+        self.ax.set_xlim(-10000, 10000)  # Set your desired x-axis limits
+        self.ax.set_ylim(-10000, 10000)
+        length = {}
+        for key, value in data_dict.items():
+            match key.lower():
+                case 'true values':
+                    true_value = True
+                    x_vec, y_vec = value
+                    length['true values'] = len(x_vec)
+                case 'measurements':
+                    validated_measurement = True
+                    validated_measurements = value
+                    length['measurements'] = len(validated_measurements)
+                case 'estimated value':
+                    estimated = True
+                    estimated_state_x, estimated_state_y = value
+                    length['estimated value'] = len(estimated_state_x)
+                case 'clutter':
+                    clutter = True
+                    clutter_data = value
+                    length['clutter'] = len(clutter_data)
+                case 'updated estimate':
+                    updated_estimate = True
+                    updated_pdaf = value
+                    length['updated estimate'] = len(updated_pdaf)
+                case 'radial':
+                    radial_estimate = True
+                    radial = value
+                    length['radial'] = len(radial)
+        max_length_val = max(length.values())
+        if true_value:
+            if i % (max_length_val // length['true values']) == 0:
+                idx = i // (max_length_val // length['true values'])
+                self.plot_true_values((x_vec[0:idx], y_vec[0:idx]), **{'label': ''})
+        if clutter:
+            if i % (max_length_val // length['clutter']) == 0:
+                idx = i // (max_length_val // length['clutter'])
+                self.plot_clutter(clutter_data[idx], **{'label': ''})
+        if validated_measurement:
+            if i % (max_length_val // length['measurements']) == 0:
+                idx = i // (max_length_val // length['measurements'])
+                self.plot_measurements(validated_measurements[idx], **{'label': ''})
+        if estimated:
+            if i % (max_length_val // length['estimated value']) == 0:
+                idx = i // (max_length_val // length['estimated value'])
+                self.plot_data((estimated_state_x[0:idx], estimated_state_y[0:idx]),
+                               **{'color': 'm', 'markersize': 1, 'label': ''})
+        if updated_estimate:
+            if i % (max_length_val // length['updated estimate']) == 0:
+                idx = i // (max_length_val // length['updated estimate'])
+                self.plot_measurements(updated_pdaf[idx], **{'color': 'orange',
+                                                             's': 20,
+                                                             'label': '',
+                                                             'marker': '+'})
+
+        if radial_estimate:
+            idx = i // (max_length_val // length['radial'])
+            if np.abs(radial[idx] - np.deg2rad(90)) < 0.1:
+                plt.cla()
+        self.add_grid()
+        self.add_labels([keys for keys in data_dict.keys()])
+
+    def plot_earth(self):
+        image = plt.imread(
+            'C:\\Users\\Shahar Avitan\\OneDrive - Technion\\Desktop\\All\\Technion\\סמסטר 6\\תורת השערוך\\Probabilistic Data Association\\earth_from_space.png')
         image[image[:, :, 3] == 0] = [0, 0, 0, 0]  # set transparent
         # Get the current scatter plot
-        extent = (-earth_radius, earth_radius, -earth_radius, earth_radius)
+        extent = (-self.EARTH_RADIUS, self.EARTH_RADIUS, -self.EARTH_RADIUS, self.EARTH_RADIUS)
         self.ax.imshow(image, extent=extent)
 
     @staticmethod

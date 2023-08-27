@@ -1,8 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Satellite:
+    EARTH_RADIUS = 6378
+
     """Simulates a non-maneuvering target with near constant velocity and system noise as acceleration"""
+
     def __init__(self, initial_r: float,
                  initial_theta: float,
                  dt: float,
@@ -18,7 +22,7 @@ class Satellite:
             orbit_time(float): the time it takes for the satalite to finish an orbit [m/s]
             system_variance(float): the variance of the noise that drives the system
         """
-        self._radius_zero = initial_r
+        self._radius_zero = self.EARTH_RADIUS + initial_r
         self._noise_var = system_variance
         self._r = np.random.normal(loc=self._radius_zero, scale=self._noise_var)
         self._theta = np.deg2rad(initial_theta)
@@ -50,8 +54,7 @@ class Satellite:
             self._angle.append(self._theta)
             # noise = np.random.normal(scale=self._noise_var)
             self._theta += self._dt * self._omega
-            self._r = np.random.normal(loc=self._radius_zero, scale=self._noise_var)
-
+            self._r += np.random.normal(loc=0, scale=self._noise_var)
 
     def get_state(self, time: float) -> list | None:
         """Get the location of the target at a given time.
@@ -65,6 +68,24 @@ class Satellite:
         idx = np.argmin(np.abs(self._time_vector - time))
         return [self._trajectory_x[idx],
                 self._trajectory_y[idx],
+                None,
+                None,
+                self._time_vector[idx]]
+
+    def get_state_radial(self, time: float) -> list | None:
+        """Get the location of the target at a given time.
+            Args:
+                time(float): Required time to find.
+            Return:
+                list: A vector of the x, y trajectory location, velocities and the time in which it was given."""
+        if time > self._time:
+            print('Time is rather then flight time')
+            return None
+        idx = np.argmin(np.abs(self._time_vector - time))
+        return [self._radius[idx],
+                self._angle[idx],
+                None,
+                None,
                 self._time_vector[idx]]
 
     @property
@@ -83,13 +104,15 @@ class Satellite:
     def radius(self) -> np.array:
         return self._radius
 
-s = Satellite(initial_r=10000,
-              initial_theta=0,
-              elapsed_time=24*3600,
-              dt=1,
-              simulation_duration=5*3600,
-              system_variance=0.5)
 
-plt.plot(s.x_trajectory, s.y_trajectory)
-plt.show()
+if __name__ == "__main__":
+    satellite = Satellite(initial_r=10000,
+                          initial_theta=0,
+                          orbit_time=24 * 3600,
+                          dt=1,
+                          simulation_duration=25 * 3600,
+                          system_variance=100)
 
+
+    plt.plot(satellite.x_trajectory, satellite.y_trajectory)
+    plt.show()
