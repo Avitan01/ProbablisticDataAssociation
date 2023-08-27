@@ -68,6 +68,14 @@ class Plotter:
         """Show or hide the grid, default is to show"""
         self.ax.grid(activate)
 
+    def set_limits(self, x_lim: list = None, y_lim: list = None):
+        if x_lim:
+            self.ax.set_xlim(x_lim)
+        if y_lim:
+            self.ax.set_ylim(y_lim)
+        if not y_lim and not x_lim:
+            self.ax.autoscale()
+
     # Specific plots
     def plot_true_values(self, true_values: tuple, **kwargs) -> None:
         """Plot a all true_values in a 2D plot
@@ -181,6 +189,13 @@ class Plotter:
 
         self.add_grid()
         self.add_labels([keys for keys in data_dict.keys()])
+
+    def plot_earth(self, earth_radius):
+        image = plt.imread('earth_from_space.png')
+        image[image[:, :, 3] == 0] = [0, 0, 0, 0]  # set transparent
+        # Get the current scatter plot
+        extent = (-earth_radius, earth_radius, -earth_radius, earth_radius)
+        self.ax.imshow(image, extent=extent)
 
     @staticmethod
     def show_plot():
