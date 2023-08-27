@@ -27,12 +27,14 @@ def monte_carlo(N: int, kwargs_dict: dict) -> dict:
     size_of_col = int(np.ceil(kwargs_dict['target']['simulation_duration'] / kwargs_dict['target']['dt']))
     x_state = np.zeros((N, size_of_col))
     y_state = np.zeros((N, size_of_col))
+    mse_state = np.zeros((N, size_of_col))
     vx_state = np.zeros((N, size_of_col))
     vy_state = np.zeros((N, size_of_col))
     x_variance = np.zeros((N, size_of_col))
     y_variance = np.zeros((N, size_of_col))
     vx_variance = np.zeros((N, size_of_col))
     vy_variance = np.zeros((N, size_of_col))
+    p_det = np.zeros((N, size_of_col))
     for num in range(N):
         target = Target(**kwargs_dict['target'])
         clutter = Clutter(**kwargs_dict['clutter'])
@@ -42,21 +44,23 @@ def monte_carlo(N: int, kwargs_dict: dict) -> dict:
             [x_true, y_true, vx_true, vy_true, _] = target.get_state(time)
             cluster = clutter.generate_clutter((x_true, y_true))
             cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
-            # Predict
-            pdaf.predict()
-            # Measure every 2 seconds
-            if i % 10 == 0:
-                # Update
-                pdaf.update(cluster)
             # Log
             x_state[num][i] = pdaf.state[0] - x_true
             y_state[num][i] = pdaf.state[1] - y_true
+            mse_state[num][i] = np.sqrt((pdaf.state[0] - x_true) ** 2 + (pdaf.state[1] - y_true) ** 2)
             vx_state[num][i] = pdaf.state[2] - vx_true
             vy_state[num][i] = pdaf.state[3] - vy_true
             x_variance[num][i] = pdaf.covariance[0][0]
             y_variance[num][i] = pdaf.covariance[1][1]
             vx_variance[num][i] = pdaf.covariance[2][2]
             vy_variance[num][i] = pdaf.covariance[3][3]
+            p_det[num][i] = np.linalg.det(pdaf.covariance)
+            # Predict
+            pdaf.predict()
+            # Measure every 2 seconds
+            if i % 10 == 0:
+                # Update
+                pdaf.update(cluster)
 
     # logs['state estimation error'][0] = np.mean(np.array([logs['state estimation error'][0], x_state]), axis=0))
     # logs['variance']
@@ -68,6 +72,8 @@ def monte_carlo(N: int, kwargs_dict: dict) -> dict:
     logs['y var'] = y_variance
     logs['vx var'] = vx_variance
     logs['vy var'] = vy_variance
+    logs['p det'] = p_det
+    logs['mse'] = mse_state
     logs['time'] = target.time_vector
     return logs
 

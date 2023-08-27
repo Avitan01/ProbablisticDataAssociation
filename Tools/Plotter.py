@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import animation
 
-# import addcopyfighandler
+import addcopyfighandler
 import numpy as np
 
 matplotlib.use('TkAgg')

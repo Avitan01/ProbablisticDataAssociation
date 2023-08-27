@@ -15,12 +15,13 @@ class SpaceClutter:
         self._LEO_norm = stats.norm(loc=LEO_mean, scale=LEO_var)
         self._GEO_norm = stats.norm(loc=GEO_mean, scale=GEO_var)
         self._MEO_ray = stats.rayleigh(scale=np.mean((LEO_mean, GEO_mean)))
+        self._part_of_sky = np.mean(self._view_angle) / 360
 
     def generate_clutter(self) -> tuple:
         radius_clutter = np.concatenate(
-            (self._LEO_norm.rvs(self.LEO_NUM),
-             self._MEO_ray.rvs(self.MEO_NUM),
-             self._GEO_norm.rvs(self.GEO_NUM))
+            (self._LEO_norm.rvs(int(self.LEO_NUM * self._part_of_sky)),
+             self._MEO_ray.rvs(int(self.MEO_NUM * self._part_of_sky)),
+             self._GEO_norm.rvs(int(self.GEO_NUM * self._part_of_sky)))
         )
         radius_clutter[radius_clutter < 0] = abs(
             radius_clutter[radius_clutter < 0])  # make sure there are no negative values

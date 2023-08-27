@@ -32,7 +32,7 @@ if __name__ == '__main__':
         initial_vx=1, initial_vy=2, system_variance=0.01 ** 2
     )
     clutter = Clutter(
-        dist_type='uniform', std=20, clutter_size=20
+        dist_type='log normal', std=1, clutter_size=2
     )
     # Define PDAF parameters
     state_size = 4
@@ -45,7 +45,7 @@ if __name__ == '__main__':
          [0, 0, 1, 0],
          [0, 0, 0, 1]]
     )
-    Pd = 0.8  # Probability for detection
+    Pd = 0.1  # Probability for detection
     Pg = 0.66  # Factor for probability
     observation_size = 2
     observation_matrix = np.array(
@@ -75,10 +75,10 @@ if __name__ == '__main__':
         [x_true, y_true, _, _, curr_time] = target.get_state(time)
         cluster = clutter.generate_clutter((x_true, y_true))
         cluster.add((x_true + noise[i][0], y_true + noise[i][1]))  # Add noise to true measurements
-        # Predict
-        pdaf.predict()
         log_state.append(pdaf.state[0:2])
         log_cov.append(pdaf.covariance)
+        # Predict
+        pdaf.predict()
         # Measure every 2 seconds
         if i % 20 == 0:
             # Update

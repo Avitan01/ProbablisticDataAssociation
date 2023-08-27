@@ -4,14 +4,13 @@ import matplotlib.pyplot as plt
 
 class Satellite:
     EARTH_RADIUS = 6378
-
+    MU = 3.986 * 10 ** 5  # km^3 / s^2
     """Simulates a non-maneuvering target with near constant velocity and system noise as acceleration"""
 
     def __init__(self, initial_r: float,
                  initial_theta: float,
                  dt: float,
-                 simulation_duration: float,
-                 orbit_time: float,
+                 orbits: float,
                  system_variance: float) -> None:
         """
         Args:
@@ -26,8 +25,8 @@ class Satellite:
         self._noise_var = system_variance
         self._r = np.random.normal(loc=self._radius_zero, scale=self._noise_var)
         self._theta = np.deg2rad(initial_theta)
-        self._time = simulation_duration
-        self._omega = (2 * np.pi) / orbit_time
+        self._orbits = orbits
+        self._omega = np.sqrt(self.MU/(initial_r ** 3))
         self._x = []
         self._y = []
         self._trajectory_x = []
@@ -36,6 +35,7 @@ class Satellite:
         self._angle = []
         self._time_vector = []
         self._dt = dt
+        self._time = int(np.ceil(self._orbits * 2 * np.pi / self._omega))
         self._time_vector = np.arange(0, self._time, self._dt)
         self.initiate()
 
@@ -44,8 +44,8 @@ class Satellite:
         for curr_time in self._time_vector:
             if curr_time > self._time:
                 break
-            if self._theta % (2 * np.pi) == 0:
-                self._theta = 0
+            if self._theta > (2 * np.pi):
+                self._theta -= 2 * np.pi
             self._x = self._r * np.cos(self._theta)
             self._y = self._r * np.sin(self._theta)
             self._trajectory_x.append(self._x)
