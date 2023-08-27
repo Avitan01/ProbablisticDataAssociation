@@ -98,7 +98,7 @@ if __name__ == '__main__':
                  [0, 0, 1, 0],
                  [0, 0, 0, 1]]
             ),
-            'Pd': 0.8,
+            'Pd': 0.1,
             'Pg': 0.66,
             'observation_matrix': np.array(
                 [[1, 0, 0, 0],
@@ -109,7 +109,7 @@ if __name__ == '__main__':
             'measurement_noise_gain': 3 ** 2
         }
     }
-    N = 50
+    N = 100
     results = monte_carlo(N, arguments_dict)
     mean_x = np.mean(results['x state'], axis=0)
     mean_y = np.mean(results['y state'], axis=0)

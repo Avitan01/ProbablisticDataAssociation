@@ -12,7 +12,7 @@ if __name__ == '__main__':
                 'initial_x': 0.0,
                 'initial_y': 0.0,
                 'dt': 0.1,
-                'simulation_duration': 50,
+                'simulation_duration': 100,
                 'initial_vx': 1,
                 'initial_vy': 2,
                 'system_variance': 0.01 ** 2
@@ -32,7 +32,7 @@ if __name__ == '__main__':
                      [0, 0, 1, 0],
                      [0, 0, 0, 1]]
                 ),
-                'Pd': 0.8,
+                'Pd': 0.1,
                 'Pg': Pg,
                 'observation_matrix': np.array(
                     [[1, 0, 0, 0],

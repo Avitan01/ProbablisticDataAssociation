@@ -23,7 +23,7 @@ if __name__ == '__main__':
         'validated measurements': True,
         'clutter': True,
         'updated estimate': False,
-        'covariance': True
+        'covariance': False
     }
 
     dt = 0.1
@@ -45,7 +45,7 @@ if __name__ == '__main__':
          [0, 0, 1, 0],
          [0, 0, 0, 1]]
     )
-    Pd = 0.8  # Probability for detection
+    Pd = 0.1  # Probability for detection
     Pg = 0.66  # Factor for probability
     observation_size = 2
     observation_matrix = np.array(
