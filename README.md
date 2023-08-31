@@ -4,7 +4,7 @@
 ## Table of content
 * [Introduction](#Introduction)
 * [Description](#Description)
-* [Project installation and requirements](#Project installation and requirements)
+* [Project installation and requirements](#Project_installation_and_requirements)
 * [Using the filter](#Using the filter)
 * [Additional tools](#Additional tools)
 * [Project Structure](#Project Structure)
