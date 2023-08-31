@@ -1,5 +1,15 @@
 # Probabilistic Data Association
 
+<!-- TABLE OF CONTENTS -->
+## Table of content
+* [Introduction](#Introduction)
+* [Description](#Description)
+* [Project installation and requirements](#Project installation and requirements)
+* [Using the filter](#Using the filter)
+* [Additional tools](#Additional tools)
+* [Project Structure](#Project Structure)
+* [Final notes](#Final notes)
+
 ## Introduction
 This project is part of the final project in Estimation theory given by Prof. Yaakov Oshman 
 in the Technion institute of technology.
