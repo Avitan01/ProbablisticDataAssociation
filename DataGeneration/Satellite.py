@@ -14,11 +14,10 @@ class Satellite:
                  system_variance: float) -> None:
         """
         Args:
-            initial_r(float): initial radius of satalie [km]
-            initial_theta(float): initial real anomolity angle [km]
+            initial_r(float): initial radius of satellite [km]
+            initial_theta(float): initial real animosity angle [km]
             dt(float): advancement in time [s]
-            simulation_duration(float): overall time of simulation [s]
-            orbit_time(float): the time it takes for the satalite to finish an orbit [m/s]
+            orbits(float): The number of orbits to take.
             system_variance(float): the variance of the noise that drives the system
         """
         self._radius_zero = self.EARTH_RADIUS + initial_r
@@ -26,7 +25,7 @@ class Satellite:
         self._r = np.random.normal(loc=self._radius_zero, scale=self._noise_var)
         self._theta = np.deg2rad(initial_theta)
         self._orbits = orbits
-        self._omega = np.sqrt(self.MU/(initial_r ** 3))
+        self._omega = np.sqrt(self.MU / (initial_r ** 3))
         self._x = []
         self._y = []
         self._trajectory_x = []
@@ -52,7 +51,6 @@ class Satellite:
             self._trajectory_y.append(self._y)
             self._radius.append(self._r)
             self._angle.append(self._theta)
-            # noise = np.random.normal(scale=self._noise_var)
             self._theta += self._dt * self._omega
             self._r += np.random.normal(loc=0, scale=self._noise_var)
 
@@ -108,11 +106,9 @@ class Satellite:
 if __name__ == "__main__":
     satellite = Satellite(initial_r=10000,
                           initial_theta=0,
-                          orbit_time=24 * 3600,
                           dt=1,
-                          simulation_duration=25 * 3600,
+                          orbits=1,
                           system_variance=100)
-
 
     plt.plot(satellite.x_trajectory, satellite.y_trajectory)
     plt.show()
