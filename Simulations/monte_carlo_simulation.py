@@ -1,18 +1,8 @@
-# Todo: Changing initial conditions.
-#       Getting state estimation error
-#       Covariance size(diagonal)
-#       Pg and Pd change separately
-
-# Parameters to return in monte carlo:
-#   - state estimation
-#   - covariance
-#   - STD
-#   - Estimation of each variable with +- std(sqrt(P))
 from scipy import stats
 import numpy as np
 from DataGeneration.Target import Target
 from DataGeneration.Clutter import Clutter
-from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import ProbabilisticDataAssociationFilter
+from ProbabilisticDataAssociation.ProbabilisticDataAssociationFilter import ProbabilisticDataAssociationFilter
 from Tools.Plotter import Plotter
 
 
@@ -57,13 +47,11 @@ def monte_carlo(N: int, kwargs_dict: dict) -> dict:
             p_det[num][i] = np.linalg.det(pdaf.covariance)
             # Predict
             pdaf.predict()
-            # Measure every 2 seconds
+            # Measure every 1 seconds
             if i % 10 == 0:
                 # Update
                 pdaf.update(cluster)
 
-    # logs['state estimation error'][0] = np.mean(np.array([logs['state estimation error'][0], x_state]), axis=0))
-    # logs['variance']
     logs['x state'] = x_state
     logs['y state'] = y_state
     logs['vx state'] = vx_state
@@ -120,9 +108,7 @@ if __name__ == '__main__':
     mean_x = np.mean(results['x state'], axis=0)
     mean_y = np.mean(results['y state'], axis=0)
     std_x = np.sqrt(np.mean(results['x var'], axis=0))
-    # std_x = np.mean(results['x var'], axis=0)
     std_y = np.sqrt(np.mean(results['y var'], axis=0))
-    # std_y = np.mean(results['y var'], axis=0)
     mean_vx = np.mean(results['vx state'] ** 2, axis=0)
     mean_vy = np.mean(results['vy state'] ** 2, axis=0)
     std_vx = np.sqrt(np.mean(results['vx var'], axis=0))
@@ -137,9 +123,7 @@ if __name__ == '__main__':
                      plot_title=f'Monte carlo simulation N={N} in x direction')
     plotter.add_grid()
     plotter.add_labels()
-    # plotter.show_plot()
     plotter.add_subplot([2, 2])
-    # plotter = Plotter()
     plotter.plot_data((results['time'], mean_y), **{'label': '$\mu$'})
     plotter.plot_data((results['time'], std_y), **{'color': 'r', 'label': '$\mu$ + $\sigma$'})
     plotter.plot_data((results['time'], -std_y), **{'color': 'r', 'label': '$\mu$ - $\sigma$'})
@@ -165,6 +149,4 @@ if __name__ == '__main__':
                      plot_title=f'Monte carlo simulation N={N} in y direction')
     plotter.add_grid()
     plotter.add_labels()
-    # plotter.set_global_axis('check')
     plotter.show_plot()
-
