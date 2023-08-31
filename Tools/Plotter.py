@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import animation
-
+import os
 import addcopyfighandler
 import numpy as np
 
@@ -125,8 +125,6 @@ class Plotter:
         # Plot the ellipse
         plt.plot(eigenvectors[0] * eigenvalues[0], eigenvectors[1] * eigenvalues[1])
 
-        # self.plot_data(covariance, **covariance_kwargs)
-
     def animate(self, frame_length: int, data_dict: dict):
         anim = animation.FuncAnimation(self.fig, self.animate_plot, fargs=(data_dict,),
                                        frames=frame_length, interval=0.1,
@@ -140,7 +138,6 @@ class Plotter:
         plt.show()
 
     def animate_plot(self, i: int, data_dict: dict):
-        # Todo: Fix labeling
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         self.set_axis(plot_title='Target Tracking')
         self.ax.set_xlim(-30, 30)  # Set your desired x-axis limits
@@ -199,7 +196,6 @@ class Plotter:
         self.add_labels([keys for keys in data_dict.keys()])
 
     def animate_satellite_plot(self, i: int, data_dict: dict):
-        # Todo: Fix labeling
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         radial_estimate = False
         self.set_axis(plot_title='Satellite Tracking')
@@ -267,7 +263,7 @@ class Plotter:
 
     def plot_earth(self):
         image = plt.imread(
-            'C:\\Users\\Shahar Avitan\\OneDrive - Technion\\Desktop\\All\\Technion\\סמסטר 6\\תורת השערוך\\Probabilistic Data Association\\earth_from_space.png')
+            '..\\Tools\\earth_from_space.png')
         image[image[:, :, 3] == 0] = [0, 0, 0, 0]  # set transparent
         # Get the current scatter plot
         extent = (-self.EARTH_RADIUS, self.EARTH_RADIUS, -self.EARTH_RADIUS, self.EARTH_RADIUS)
