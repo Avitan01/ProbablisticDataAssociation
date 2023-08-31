@@ -2,7 +2,7 @@ import numpy as np
 from Simulations.monte_carlo_simulation import monte_carlo
 from Tools.Plotter import Plotter
 
-sim_results =[]
+sim_results = []
 if __name__ == '__main__':
     param_dict = {
         'target': {
