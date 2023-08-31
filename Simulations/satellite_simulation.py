@@ -4,12 +4,9 @@ from DataGeneration.Satellite import Satellite
 from DataGeneration.SpaceClutter import SpaceClutter
 from Tools.Plotter import Plotter
 import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 import numpy as np
 
-from DataGeneration.Target import Target
-from DataGeneration.Clutter import Clutter
-from ProbabilisticDataAssociation.SatelliteProbablisticDataAssociationFilter import  SatelliteProbabilisticDataAssociationFilter
+from ProbabilisticDataAssociation.ProbabilisticDataAssociationFilter import ProbabilisticDataAssociationFilter
 
 if __name__ == '__main__':
     plotter = Plotter()
@@ -66,7 +63,7 @@ if __name__ == '__main__':
     process_noise_gain = 1 ** 2
     measurement_noise_gain = 10 ** 2
 
-    pdaf = SatelliteProbabilisticDataAssociationFilter(
+    pdaf = ProbabilisticDataAssociationFilter(
         state_size, initial_state, initial_covariance_magnitude,
         transition_matrix, Pd, Pg, observation_matrix, observation_size,
         process_noise_gain, measurement_noise_gain
@@ -140,8 +137,6 @@ if __name__ == '__main__':
                                                        'marker': '+'})
         if to_plot_or_not_to_plot['earth']:
             plotter.plot_earth()
-    # plotter.plot_true_values((satellite.x_trajectory, satellite.y_trajectory))
-    # plotter.plot_clutter(cluster)
 
     plotter.set_limits()
     plotter.add_grid()
@@ -159,7 +154,7 @@ if __name__ == '__main__':
         'estimated value': (x_points, y_points),
         # 'clutter': saved_clutter,
         'radial': theta_points,
-    }  # 'updated estimate': updated_pdaf
+    }
 
     if plot_type['animate']:
         plotter.animate_satellite(len(satellite.time_vector), data_dict)
