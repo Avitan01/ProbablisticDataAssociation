@@ -63,7 +63,7 @@ if __name__ == '__main__':
             'x state': mean_x,
             'y state': mean_y,
             'vx state': mean_vx,
-            'vy state': std_x,#p_det,
+            'vy state': mean_vy,
             'mse': mse,
             'p det': p_det,
         }
@@ -84,37 +84,43 @@ if __name__ == '__main__':
     plotter.add_grid()
     plotter.set_limits(y_lim=[0, 0.5])
     plotter.add_labels(**{'loc': 'upper right'})
-    # plotter.add_subplot([2, 2])
-    # for dist in distributions.keys():
-    #     plotter.plot_data((results['time'], dist_info[dist]['x state']), **{'label': f'{dist}'})
-    # plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
-    #                  plot_title=f'Monte carlo simulation N={N} in x direction')
-    # plotter.add_grid()
-    # plotter.add_labels(**{'loc': 'upper right'})
-    #
-    # plotter.add_subplot([2, 2])
-    # for dist in distributions.keys():
-    #     plotter.plot_data((results['time'], dist_info[dist]['y state']), **{'label': dist})
-    # plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{y}$',
-    #                  plot_title=f'Monte carlo simulation N={N} in y direction')
-    # plotter.add_grid()
-    # plotter.add_labels(**{'loc': 'upper right'})
-    #
-    # plotter.add_subplot([2, 2])
-    # for dist in distributions.keys():
-    #     plotter.plot_data((results['time'], dist_info[dist]['vx state']), **{'label': dist})
-    # plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vx}$',
-    #                  plot_title=f'Monte carlo simulation N={N} in x direction')
-    # plotter.add_grid()
-    # plotter.add_labels(**{'loc': 'upper right'})
-    #
-    # plotter.add_subplot([2, 2])
-    # for dist in distributions.keys():
-    #     plotter.plot_data((results['time'], dist_info[dist]['vy state']), **{'label': dist})
-    # plotter.set_axis(x_label='Time [s]', y_label='$\\tilde{vy}$',
-    #                  plot_title=f'Monte carlo simulation N={N} in y direction')
     plotter.add_grid()
     plotter.add_labels(**{'loc': 'upper right'})
     plotter.set_global_axis('Effect of clutter distribution on the state estimation error')
     plotter.show_plot()
+
+    plotter_var = Plotter()
+    plotter_var.add_subplot([2, 2])
+    for dist in distributions.keys():
+        plotter_var.plot_data((results['time'], dist_info[dist]['x state']), **{'label': f'{dist}'})
+    plotter_var.set_axis(x_label='Time [s]', y_label='$\\tilde{x}$',
+                     plot_title=f'Monte carlo simulation N={N} in x direction')
+    plotter_var.add_grid()
+    plotter_var.add_labels(**{'loc': 'upper right'})
+
+    plotter_var.add_subplot([2, 2])
+    for dist in distributions.keys():
+        plotter_var.plot_data((results['time'], dist_info[dist]['y state']), **{'label': dist})
+    plotter_var.set_axis(x_label='Time [s]', y_label='$\\tilde{y}$',
+                     plot_title=f'Monte carlo simulation N={N} in y direction')
+    plotter_var.add_grid()
+    plotter_var.add_labels(**{'loc': 'upper right'})
+
+    plotter_var.add_subplot([2, 2])
+    for dist in distributions.keys():
+        plotter_var.plot_data((results['time'], dist_info[dist]['vx state']), **{'label': dist})
+    plotter_var.set_axis(x_label='Time [s]', y_label='$\\tilde{vx}$',
+                     plot_title=f'Monte carlo simulation N={N} in x direction')
+    plotter_var.add_grid()
+    plotter_var.add_labels(**{'loc': 'upper right'})
+
+    plotter_var.add_subplot([2, 2])
+    for dist in distributions.keys():
+        plotter_var.plot_data((results['time'], dist_info[dist]['vy state']), **{'label': dist})
+    plotter_var.set_axis(x_label='Time [s]', y_label='$\\tilde{vy}$',
+                     plot_title=f'Monte carlo simulation N={N} in y direction')
+    plotter_var.add_grid()
+    plotter_var.add_labels(**{'loc': 'upper right'})
+    plotter_var.set_global_axis('Effect of clutter distribution on the state estimation error')
+    plotter_var.show_plot()
 
