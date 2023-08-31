@@ -4,6 +4,7 @@ from ProbabilisticDataAssociation.ProbabilisticDataAssociationFilter import Prob
 from DataGeneration.Clutter import Clutter
 from DataGeneration.Target import Target
 
+
 class TestFilter(unittest.TestCase):
     """Test the Kalman filter implemented"""
 
@@ -58,4 +59,3 @@ class TestFilter(unittest.TestCase):
         self.pdaf.predict()
         cov_after = np.linalg.det(self.pdaf.covariance)
         self.assertGreater(cov_after, cov_before)
-

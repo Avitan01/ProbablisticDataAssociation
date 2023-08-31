@@ -125,10 +125,13 @@ class Plotter:
         # Plot the ellipse
         plt.plot(eigenvectors[0] * eigenvalues[0], eigenvectors[1] * eigenvalues[1])
 
-    def animate(self, frame_length: int, data_dict: dict):
+    def animate(self, frame_length: int, data_dict: dict, save: bool = False):
         anim = animation.FuncAnimation(self.fig, self.animate_plot, fargs=(data_dict,),
                                        frames=frame_length, interval=0.1,
                                        )
+        # Save the animation as a GIF
+        if save:
+            anim.save('..\\Tools\\animation.gif', writer='pillow', fps=20)
         plt.show()
 
     def animate_satellite(self, frame_length: int, data_dict: dict):
@@ -138,10 +141,9 @@ class Plotter:
         plt.show()
 
     def animate_plot(self, i: int, data_dict: dict):
+        plt.cla()
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False
         self.set_axis(plot_title='Target Tracking')
-        self.ax.set_xlim(-30, 30)  # Set your desired x-axis limits
-        self.ax.set_ylim(-30, 50)
         length = {}
         for key, value in data_dict.items():
             match key.lower():
@@ -165,24 +167,27 @@ class Plotter:
                     updated_estimate = True
                     updated_pdaf = value
                     length['updated estimate'] = len(updated_pdaf)
-        # plt.cla()
         max_length_val = max(length.values())
         if true_value:
             if i % (max_length_val // length['true values']) == 0:
                 idx = i // (max_length_val // length['true values'])
-                self.plot_true_values((x_vec[0:idx], y_vec[0:idx]), **{'label': ''})
+                min_idx = 0 if idx < 20 else idx - 20
+                self.plot_true_values((x_vec[min_idx:idx], y_vec[min_idx:idx]), **{'label': ''})
+                self.ax.set_xlim(x_vec[idx] - 10, x_vec[idx] + 10)  # Set your desired x-axis limits
+                self.ax.set_ylim(y_vec[idx] - 10, y_vec[idx] + 10)
         if clutter:
-            if i % (max_length_val // length['clutter']) == 0:
-                idx = i // (max_length_val // length['clutter'])
-                self.plot_clutter(clutter_data[idx], **{'label': ''})
+            # if i % (max_length_val // length['clutter']) == 0:
+            idx = i // (max_length_val // length['clutter'])
+            self.plot_clutter(clutter_data[idx], **{'label': ''})
         if validated_measurement:
-            if i % (max_length_val // length['measurements']) == 0:
-                idx = i // (max_length_val // length['measurements'])
-                self.plot_measurements(validated_measurements[idx], **{'label': ''})
+            # if i % (max_length_val // length['measurements']) == 0:
+            idx = i // (max_length_val // length['measurements'])
+            self.plot_measurements(validated_measurements[idx], **{'label': ''})
         if estimated:
             if i % (max_length_val // length['estimated value']) == 0:
                 idx = i // (max_length_val // length['estimated value'])
-                self.plot_data((estimated_state_x[0:idx], estimated_state_y[0:idx]),
+                min_idx = 0 if idx < 20 else idx - 20
+                self.plot_data((estimated_state_x[min_idx:idx], estimated_state_y[min_idx:idx]),
                                **{'color': 'm', 'markersize': 1, 'label': ''})
         if updated_estimate:
             if i % (max_length_val // length['updated estimate']) == 0:
@@ -193,7 +198,16 @@ class Plotter:
                                                              'marker': '+'})
 
         self.add_grid()
-        self.add_labels([keys for keys in data_dict.keys()])
+        labels = [keys for keys in data_dict.keys()]
+        idx = labels.index('measurements')
+        if idx:
+            estimated_string = labels.pop(idx)
+            labels.append(estimated_string)
+        idx = labels.index('estimated value')
+        if idx:
+            estimated_string = labels.pop(idx)
+            labels.append(estimated_string)
+        self.add_labels(labels)
 
     def animate_satellite_plot(self, i: int, data_dict: dict):
         true_value, validated_measurement, estimated, clutter, updated_estimate = False, False, False, False, False

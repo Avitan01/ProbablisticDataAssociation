@@ -13,8 +13,8 @@ if __name__ == '__main__':
     plotter = Plotter()
     plotter.set_axis(plot_title='Target Tracking basic simulation',
                      x_label='x [m]', y_label='y [m]')
-    plot_type = {'static': True,
-                 'animate': False
+    plot_type = {'static': False,
+                 'animate': True
                  }
     # Static plotting
     to_plot_or_not_to_plot = {
@@ -135,5 +135,5 @@ if __name__ == '__main__':
         plotter.add_labels()
 
     if plot_type['animate']:
-        plotter.animate(len(target.time_vector), data_dict)
+        plotter.animate(len(target.time_vector), data_dict, save=True)
     plt.show()
