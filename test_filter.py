@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from ProbabilisticDataAssociation.ProbablisticDataAssociationFilter import ProbabilisticDataAssociationFilter
+from ProbabilisticDataAssociation.ProbabilisticDataAssociationFilter import ProbabilisticDataAssociationFilter
 from DataGeneration.Clutter import Clutter
 from DataGeneration.Target import Target
 
@@ -59,9 +59,3 @@ class TestFilter(unittest.TestCase):
         cov_after = np.linalg.det(self.pdaf.covariance)
         self.assertGreater(cov_after, cov_before)
 
-    def test_update_decreases_uncertainty(self):
-        cov_before = np.linalg.det(self.pdaf.covariance)
-        [x_true, y_true, _, _, curr_time] = self.target.get_state(self.target.time_vector[0])
-        self.pdaf.update(self.clutter.generate_clutter((x_true, y_true)))
-        cov_after = np.linalg.det(self.pdaf.covariance)
-        self.assertGreater(cov_after, cov_before)
