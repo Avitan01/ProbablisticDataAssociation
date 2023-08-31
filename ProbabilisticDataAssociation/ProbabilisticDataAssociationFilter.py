@@ -41,11 +41,9 @@ class ProbabilisticDataAssociationFilter:
         self._H = observation_matrix  # Observation matrix
         self._Q = process_noise_gain * np.eye(self.NUMVARS)  # Process noise covariance
         self._R = measurement_noise_gain * np.eye(self.NUMMEAS)
-        # self._gamma = (stats.norm.ppf(1 - (1 - self._Pg) / self.NUMMEAS)) ** 2  # Validation parameter
         self._gamma = 0  # Validation parameter
         self._lambda = 0  # Poisson dist of the number of targets in the clutter
         self._log_state = []
-        # self.CRLB = np.linalg.inv(np.mean(self._H.T.dot(np.linalg.inv(self._R)).dot(self._H)))
 
     def predict(self):
         """Predict the future state, measurement and covariance based on a known model"""
@@ -97,7 +95,6 @@ class ProbabilisticDataAssociationFilter:
         beta_zero = (1 - self._Pd * self._Pg) / (1 - self._Pd * self._Pg + total_likelihood)
         innovation_series = [beta_i * nu_i for beta_i, nu_i in zip(beta, nu)]  # vector nu_i * beta_i
         if innovation_series:
-            # sum_beta_double_nu = sum([nu_i * nu_i.T * beta_i for beta_i, nu_i in zip(beta, nu)])
             sum_beta_double_nu = sum(np.array(innovation_series).T.dot((np.array(nu))))
             spread_of_cov = sum_beta_double_nu - (np.array(innovation_series).T.dot(np.array(innovation_series)))
             spread_of_covariance = self._W.dot(spread_of_cov).dot(self._W.T)
@@ -115,41 +112,9 @@ class ProbabilisticDataAssociationFilter:
         self._W = self._P.dot(self._H.T).dot(np.linalg.inv(self._S))
         combined_innovation, beta_zero, spread_of_covariance = self.associate(valid_measurement)
         self._x = self._x + self._W.dot(combined_innovation)
-        # P_correct = self._P - self._W.dot(self._S).dot(self._W.T)
         P_correct = (np.eye(self._P.shape[0]) - self._W.dot(self._H)).dot(self._P)  # Josef's formula
         self._P = beta_zero * self._P + (1 - beta_zero) * P_correct + spread_of_covariance
-        # new_Pd = self.find_optimal_pd()
-        # if new_Pd != self._Pd:
-        #     print(f'Changed Pd from {self._Pd} to {new_Pd}')
-        # self._Pd = new_Pd
         return valid_measurement
-
-    # def calculate_snr(self):
-    #     # signal_power = np.linalg.norm(self._x)
-    #     signal_power = sum(np.linalg.norm(state_vector) ** 2 for state_vector in self._x) / self.NUMVARS
-    #     noise_power = np.linalg.det(self._R) + np.linalg.det(self._Q)
-    #     return signal_power // noise_power
-    #
-    # def find_optimal_pd(self):
-    #     """Find the optimal Pd for a given SNR and Pfa."""
-    #     snr = self.calculate_snr()
-    #     # if snr:
-    #     #     breakpoint()
-    #     roc_curve = {
-    #         0: 0.1,
-    #         1: 0.2,
-    #         2: 0.3,
-    #         3: 0.4,
-    #         4: 0.5,
-    #         5: 0.6,
-    #         6: 0.7,
-    #         7: 0.8,
-    #         8: 0.9,
-    #         9: 1.0
-    #     }
-    #     if snr <= 9:
-    #         return roc_curve[snr]
-    #     return 1
 
     @property
     def state(self) -> np.array:
